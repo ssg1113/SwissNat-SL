@@ -1,5 +1,9 @@
 import React from 'react';
-import { Star } from 'lucide-react';
+import { Star, Download } from 'lucide-react';
+
+interface WebFooterProps {
+  onOpenInstall?: () => void;
+}
 
 const GithubIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -18,7 +22,7 @@ const GithubIcon = ({ size = 14 }: { size?: number }) => (
   </svg>
 );
 
-export const WebFooter: React.FC = () => {
+export const WebFooter: React.FC<WebFooterProps> = ({ onOpenInstall }) => {
   const currentYear = new Date().getFullYear();
   const repoUrl = 'https://github.com/ssg1113/SwissNat-SL';
   const authorUrl = 'https://github.com/ssg1113';
@@ -29,6 +33,28 @@ export const WebFooter: React.FC = () => {
         {/* Left: Copyright & Rights */}
         <div className="footer-simple-left">
           &copy; {currentYear} <strong className="footer-brand-name">SwissNat SL</strong>. All rights reserved.
+          {onOpenInstall && (
+            <button
+              type="button"
+              onClick={onOpenInstall}
+              style={{
+                marginLeft: 14,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--accent-gold)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              <Download size={13} />
+              Install Options (PC / Mobile)
+            </button>
+          )}
         </div>
 
         {/* Right: Star on GitHub & Creator attribution */}

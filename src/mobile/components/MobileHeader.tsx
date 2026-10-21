@@ -1,26 +1,20 @@
 import React from 'react';
-import { Share2, Download, CheckCircle2 } from 'lucide-react';
+import { Share2, Download, CheckCircle2, Smartphone } from 'lucide-react';
 import type { NatRecord } from '../../core/types';
 import { downloadNatXls, shareNatFile } from '../../core/natBuilder';
-import { ViewModeSwitcher } from '../../shared/components/ViewModeSwitcher';
-import type { ViewMode } from '../../shared/hooks/useDeviceMode';
 
 interface MobileHeaderProps {
   records: NatRecord[];
   selectedCategory: string;
   onNotify?: (msg: string) => void;
-  isMobile: boolean;
-  viewOverride: ViewMode;
-  onViewChange: (mode: ViewMode) => void;
+  onOpenInstall?: () => void;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   records,
   selectedCategory,
   onNotify,
-  isMobile,
-  viewOverride,
-  onViewChange,
+  onOpenInstall,
 }) => {
   const [sharing, setSharing] = React.useState(false);
   const [shareSuccess, setShareSuccess] = React.useState<boolean | null>(null);
@@ -115,11 +109,29 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 
       {/* Right Controls: View Switcher & Action buttons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <ViewModeSwitcher
-          isMobile={isMobile}
-          viewOverride={viewOverride}
-          onViewChange={onViewChange}
-        />
+        {onOpenInstall && (
+          <button
+            type="button"
+            onClick={onOpenInstall}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '5px 8px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--accent-gold-light)',
+              color: 'var(--accent-gold-dark)',
+              border: '1px solid var(--accent-gold-border)',
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+            title="Install SwissNat SL App (Mobile / Tablet / PC)"
+          >
+            <Smartphone size={13} />
+            <span>Install</span>
+          </button>
+        )}
 
         {records.length > 0 && (
           <>

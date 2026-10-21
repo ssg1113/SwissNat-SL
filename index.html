@@ -8,10 +8,22 @@
     <meta name="theme-color" content="#0b0f19" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="application-name" content="SwissNat SL" />
+    <meta name="apple-mobile-web-app-title" content="SwissNat SL" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <title>SwissNat SL — Pairing Arbiter NAT File Generator</title>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('SW registration note:', err);
+          });
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

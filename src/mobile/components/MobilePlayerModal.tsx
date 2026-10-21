@@ -18,9 +18,15 @@ export const MobilePlayerModal: React.FC<MobilePlayerModalProps> = ({
   onSave,
   onDelete,
 }) => {
-  if (!isOpen || !player) return null;
+  const [prevId, setPrevId] = useState<string | undefined>(player?.id);
+  const [form, setForm] = useState<NatRecord>(() => (player ? { ...player } : ({} as NatRecord)));
 
-  const [form, setForm] = useState<NatRecord>({ ...player });
+  if (player && player.id !== prevId) {
+    setPrevId(player.id);
+    setForm({ ...player });
+  }
+
+  if (!isOpen || !player) return null;
 
   const handleChange = (field: keyof NatRecord, value: any) => {
     setForm(prev => {

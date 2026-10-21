@@ -1,0 +1,53 @@
+{
+  "name": "SwissNat SL — Pairing Arbiter Assistant",
+  "short_name": "SwissNat SL",
+  "description": "Smart Swiss-Manager NAT File Generator for Sri Lankan Chess Tournaments. Clean player names and export legacy .xls NAT files.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "productivity",
+    "utilities",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "/SwissNat SL Icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/SwissNat SL Icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Import Registration Sheet",
+      "short_name": "Import",
+      "description": "Upload Google Forms or Excel registration file",
+      "url": "/?tab=upload"
+    },
+    {
+      "name": "NAT Player Table",
+      "short_name": "Table",
+      "description": "Review cleaned Swiss-Manager NAT table",
+      "url": "/?tab=table"
+    }
+  ]
+}

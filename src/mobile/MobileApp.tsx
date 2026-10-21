@@ -6,8 +6,8 @@ import { MobileImportView } from './components/MobileImportView';
 import { MobilePlayerList } from './components/MobilePlayerList';
 import { MobileExportView } from './components/MobileExportView';
 import { MobileHelpView } from './components/MobileHelpView';
+import { InstallModal } from '../shared/components/InstallModal';
 import type { NatRecord, RawPlayerRow, ColumnMapping, SplitMode } from '../core/types';
-import type { ViewMode } from '../shared/hooks/useDeviceMode';
 
 export interface MobileAppProps {
   records: NatRecord[];
@@ -20,9 +20,7 @@ export interface MobileAppProps {
   splitMode: SplitMode;
   statusNotification: string | null;
   onNotify: (msg: string) => void;
-  isMobile: boolean;
-  viewOverride: ViewMode;
-  onViewChange: (mode: ViewMode) => void;
+  isMobile?: boolean;
 }
 
 export const MobileApp: React.FC<MobileAppProps> = ({
@@ -35,13 +33,11 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   splitMode,
   statusNotification,
   onNotify,
-  isMobile,
-  viewOverride,
-  onViewChange,
 }) => {
   const [activeTab, setActiveTab] = useState<MobileTab>(
     records.length > 0 ? 'players' : 'import'
   );
+  const [isInstallOpen, setIsInstallOpen] = useState(false);
 
   return (
     <div style={{
@@ -56,9 +52,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         records={records}
         selectedCategory={selectedCategory}
         onNotify={onNotify}
-        isMobile={isMobile}
-        viewOverride={viewOverride}
-        onViewChange={onViewChange}
+        onOpenInstall={() => setIsInstallOpen(true)}
       />
 
       {/* Floating Status Notification Toast */}
@@ -118,7 +112,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         )}
 
         {activeTab === 'help' && (
-          <MobileHelpView />
+          <MobileHelpView onOpenInstall={() => setIsInstallOpen(true)} />
         )}
       </main>
 
@@ -127,6 +121,13 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         activeTab={activeTab}
         onTabChange={setActiveTab}
         playerCount={records.length}
+      />
+
+      {/* Mobile & PC Separate Install Modal */}
+      <InstallModal
+        isOpen={isInstallOpen}
+        onClose={() => setIsInstallOpen(false)}
+        defaultTab="mobile"
       />
     </div>
   );

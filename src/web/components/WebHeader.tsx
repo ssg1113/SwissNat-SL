@@ -1,26 +1,20 @@
 import React from 'react';
-import { Download, Share2, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { Download, Share2, FileSpreadsheet, CheckCircle2, Laptop } from 'lucide-react';
 import type { NatRecord } from '../../core/types';
 import { downloadNatXls, downloadNatXlsx, shareNatFile } from '../../core/natBuilder';
-import { ViewModeSwitcher } from '../../shared/components/ViewModeSwitcher';
-import type { ViewMode } from '../../shared/hooks/useDeviceMode';
 
 export interface WebHeaderProps {
   records: NatRecord[];
   selectedCategory: string;
   onNotify?: (msg: string) => void;
-  isMobile?: boolean;
-  viewOverride?: ViewMode;
-  onViewChange?: (mode: ViewMode) => void;
+  onOpenInstall?: () => void;
 }
 
 export const WebHeader: React.FC<WebHeaderProps> = ({
   records,
   selectedCategory,
   onNotify,
-  isMobile,
-  viewOverride,
-  onViewChange,
+  onOpenInstall,
 }) => {
   const [sharing, setSharing] = React.useState(false);
   const [shareSuccess, setShareSuccess] = React.useState<boolean | null>(null);
@@ -148,12 +142,30 @@ export const WebHeader: React.FC<WebHeaderProps> = ({
 
         {/* Right Actions: View Switcher, Download .xls, .xlsx, Share */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          {onViewChange && viewOverride !== undefined && (
-            <ViewModeSwitcher
-              isMobile={!!isMobile}
-              viewOverride={viewOverride}
-              onViewChange={onViewChange}
-            />
+          {onOpenInstall && (
+            <button
+              type="button"
+              onClick={onOpenInstall}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '7px 13px',
+                fontSize: 12.5,
+                fontWeight: 600,
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-card)',
+                color: 'var(--text-main)',
+                border: '1px solid var(--accent-gold-border)',
+                cursor: 'pointer',
+                boxShadow: 'var(--shadow-xs)',
+                transition: 'all 0.15s ease',
+              }}
+              title="Install SwissNat SL on PC / Laptop or Mobile"
+            >
+              <Laptop size={14} color="var(--accent-gold)" />
+              <span>Install App</span>
+            </button>
           )}
 
           <button

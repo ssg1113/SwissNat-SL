@@ -14,8 +14,10 @@ export function App() {
   const [mapping, setMapping] = useState<ColumnMapping | null>(null);
   const [records, setRecords] = useState<NatRecord[]>([]);
 
-  // Adaptive device & viewport mode hook (Capacitor native or screen width < 768px)
-  const { isMobile, viewOverride, setViewOverride } = useDeviceMode();
+  // Device mode hook:
+  // - Smartphones & tablets -> MobileApp
+  // - PC, laptops, desktops -> WebApp (never shows mobile app view on PC/laptop)
+  const { isMobile } = useDeviceMode();
 
   const showNotification = (msg: string) => {
     setStatusNotification(msg);
@@ -46,8 +48,6 @@ export function App() {
     statusNotification,
     onNotify: showNotification,
     isMobile,
-    viewOverride,
-    onViewChange: setViewOverride,
   };
 
   if (isMobile) {

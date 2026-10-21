@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { isMobileOrTabletDevice } from '../utils/deviceDetection';
 
 export type ViewMode = 'auto' | 'web' | 'mobile';
 
@@ -8,40 +9,38 @@ export function useDeviceMode() {
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
-  
-  // Stored preference for manual override if user wants to force Web or Mobile view
-  const [viewOverride, setViewOverride] = useState<ViewMode>(() => {
-    try {
-      const saved = localStorage.getItem('swissnat_view_mode') as ViewMode | null;
-      return saved === 'web' || saved === 'mobile' ? saved : 'auto';
-    } catch {
-      return 'auto';
-    }
-  });
+
+  const [isMobileDevice, setIsMobileDevice] = useState(() => isMobileOrTabletDevice());
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+    // Clear any obsolete localStorage override that may force desktop into mobile view
+    try {
+      const saved = localStorage.getItem('swissnat_view_mode');
+      if (saved && !isMobileOrTabletDevice()) {
+        localStorage.removeItem('swissnat_view_mode');
+      }
+    } catch {
+      // ignore
+    }
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setIsMobileDevice(isMobileOrTabletDevice());
+    };
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const changeViewMode = (mode: ViewMode) => {
-    setViewOverride(mode);
-    try {
-      localStorage.setItem('swissnat_view_mode', mode);
-    } catch {
-      // ignore
-    }
-  };
-
-  const isMobileScreen = windowWidth < 768;
-  const isMobile = viewOverride === 'auto' ? (isNative || isMobileScreen) : viewOverride === 'mobile';
+  // Strict separation:
+  // - Mobile app view is ONLY for smart phones, tabs, and native apps
+  // - Web app view is for PC, laptop, etc. (never shows mobile app view on PC/laptop)
+  const isMobile = isNative || isMobileDevice;
 
   return {
     isMobile,
     isNative,
     windowWidth,
-    viewOverride,
-    setViewOverride: changeViewMode,
+    isMobileDevice,
   };
 }

@@ -5,8 +5,8 @@ import { WebMetricsBar } from './components/WebMetricsBar';
 import { WebNatTable } from './components/WebNatTable';
 import { WebImportTab } from './components/WebImportTab';
 import { WebFooter } from './components/WebFooter';
+import { InstallModal } from '../shared/components/InstallModal';
 import type { NatRecord, RawPlayerRow, ColumnMapping, SplitMode } from '../core/types';
-import type { ViewMode } from '../shared/hooks/useDeviceMode';
 
 export interface WebAppProps {
   records: NatRecord[];
@@ -19,9 +19,7 @@ export interface WebAppProps {
   splitMode: SplitMode;
   statusNotification: string | null;
   onNotify: (msg: string) => void;
-  isMobile: boolean;
-  viewOverride: ViewMode;
-  onViewChange: (mode: ViewMode) => void;
+  isMobile?: boolean;
 }
 
 export const WebApp: React.FC<WebAppProps> = ({
@@ -34,11 +32,9 @@ export const WebApp: React.FC<WebAppProps> = ({
   splitMode,
   statusNotification,
   onNotify,
-  isMobile,
-  viewOverride,
-  onViewChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'upload' | 'table'>('upload');
+  const [isInstallOpen, setIsInstallOpen] = useState(false);
 
   const handleRecordsImported = (
     newRecords: NatRecord[],
@@ -56,9 +52,7 @@ export const WebApp: React.FC<WebAppProps> = ({
         records={records}
         selectedCategory={selectedCategory}
         onNotify={onNotify}
-        isMobile={isMobile}
-        viewOverride={viewOverride}
-        onViewChange={onViewChange}
+        onOpenInstall={() => setIsInstallOpen(true)}
       />
 
       {/* Floating Status Notification Toast */}
@@ -162,7 +156,14 @@ export const WebApp: React.FC<WebAppProps> = ({
       </main>
 
       {/* Footer */}
-      <WebFooter />
+      <WebFooter onOpenInstall={() => setIsInstallOpen(true)} />
+
+      {/* PC / Mobile Separate Install Modal */}
+      <InstallModal
+        isOpen={isInstallOpen}
+        onClose={() => setIsInstallOpen(false)}
+        defaultTab="pc"
+      />
     </div>
   );
 };
