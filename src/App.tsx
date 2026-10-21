@@ -7,15 +7,11 @@ import { ImportTab } from './components/ImportTab';
 import { Footer } from './components/Footer';
 import type { NatRecord, RawPlayerRow, ColumnMapping, SplitMode } from './core/types';
 import { sanitizePlayerRow } from './core/sanitizer';
-import type * as XLSX from 'xlsx';
 
 export function App() {
   const [splitMode] = useState<SplitMode>('surname_first');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'upload' | 'table'>('upload');
-  const [customTemplateWb, setCustomTemplateWb] = useState<XLSX.WorkBook | null>(null);
-  const [customTemplateName, setCustomTemplateName] = useState<string | null>(null);
-  const [activeTemplateMode, setActiveTemplateMode] = useState<'default' | 'custom'>('default');
   const [statusNotification, setStatusNotification] = useState<string | null>(null);
 
   // Start with clean empty state (no hardcoded dummy data)
@@ -42,36 +38,12 @@ export function App() {
     showNotification(`Processed ${newRecords.length} players ready for Swiss-Manager!`);
   };
 
-  // Handle custom template upload (in-memory only, not permanently stored)
-  const handleCustomTemplateLoaded = (wb: XLSX.WorkBook, filename: string) => {
-    setCustomTemplateWb(wb);
-    setCustomTemplateName(filename);
-    setActiveTemplateMode('custom');
-    showNotification(`Custom template "${filename}" loaded! Output will follow this template.`);
-  };
-
-  // Remove custom template and restore official default template
-  const handleRemoveCustomTemplate = () => {
-    setCustomTemplateWb(null);
-    setCustomTemplateName(null);
-    setActiveTemplateMode('default');
-    showNotification('Custom template cleared. Official default template restored.');
-  };
-
-  // Template workbook to use based on user selection (default or custom)
-  const effectiveTemplateWorkbook = activeTemplateMode === 'custom' && customTemplateWb ? customTemplateWb : null;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* Top Header */}
       <Header
         records={records}
         selectedCategory={selectedCategory}
-        customTemplateWorkbook={effectiveTemplateWorkbook}
-        customTemplateName={customTemplateName}
-        activeTemplateMode={activeTemplateMode}
-        onSelectTemplateMode={setActiveTemplateMode}
-        onRemoveCustomTemplate={handleRemoveCustomTemplate}
         onNotify={showNotification}
       />
 
@@ -158,12 +130,6 @@ export function App() {
             onRecordsImported={handleRecordsImported}
             splitMode={splitMode}
             currentMapping={mapping}
-            onCustomTemplateLoaded={handleCustomTemplateLoaded}
-            customTemplateName={customTemplateName}
-            customTemplateWorkbook={customTemplateWb}
-            activeTemplateMode={activeTemplateMode}
-            onSelectTemplateMode={setActiveTemplateMode}
-            onRemoveCustomTemplate={handleRemoveCustomTemplate}
             currentRecords={records}
             onGoToTable={() => setActiveTab('table')}
             onNotify={showNotification}
@@ -176,11 +142,6 @@ export function App() {
             onRecordsChange={setRecords}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
-            customTemplateWorkbook={effectiveTemplateWorkbook}
-            customTemplateName={customTemplateName}
-            activeTemplateMode={activeTemplateMode}
-            onSelectTemplateMode={setActiveTemplateMode}
-            onRemoveCustomTemplate={handleRemoveCustomTemplate}
             onNotify={showNotification}
           />
         )}

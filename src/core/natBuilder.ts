@@ -82,173 +82,70 @@ export function getDefaultNatTemplateWorkbook(): XLSX.WorkBook {
 }
 
 /**
- * Maps a NatRecord field to a custom or standard template column header
- */
-export function mapRecordToColumn(record: NatRecord, headerName: string, columnIndex: number): string | number {
-  const clean = headerName.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  if (/^(idno|id|no|number|playerid|regno)$/.test(clean)) {
-    return record.ID_No;
-  }
-  if (/^(lastname|surname|familyname|last)$/.test(clean)) {
-    return record.LastName;
-  }
-  if (/^(firstname|givenname|first|initials)$/.test(clean)) {
-    return record.FirstName;
-  }
-  if (clean === 'name') {
-    // If column is named "Name", check if there's no Last Name or use full formatted name
-    return record.LastName ? `${record.LastName}, ${record.FirstName}` : record.FirstName;
-  }
-  if (/^(sex|gender)$/.test(clean)) {
-    return record.Sex;
-  }
-  if (/^(fed|federation|country|nat|nation)$/.test(clean)) {
-    return record.Fed;
-  }
-  if (/^(clubnumber|clubno|clubid|schoolid|schoolcode|clubcode)$/.test(clean)) {
-    return record.Clubnumber;
-  }
-  if (/^(clubname|club|school|team|institution|academy)$/.test(clean)) {
-    return record.ClubName;
-  }
-  if (/^(birthday|birthdate|dob|birth|yob)$/.test(clean)) {
-    return record.Birthday;
-  }
-  if (/^(rtgnat|natrtg|nationalrating|localrating|ratingnat|natrating|rtg)$/.test(clean)) {
-    return record.Rtg_Nat;
-  }
-  if (/^(fideno|fideid|fidenumber|fide)$/.test(clean)) {
-    return record.Fide_No;
-  }
-  if (/^(rtgint|intrtg|fiderating|internationalrating|ratingint|intrating)$/.test(clean)) {
-    return record.Rtg_Int;
-  }
-  if (/^(title|fidetitle)$/.test(clean)) {
-    return record.Title;
-  }
-  if (/^(k|kfactor)$/.test(clean)) {
-    return record.K;
-  }
-  if (/^(category|division|agegroup|event)$/.test(clean)) {
-    return record.Category || (record._rawOriginal?.Category ?? '');
-  }
-
-  // Check in _rawOriginal for exact or normalized match
-  if (record._rawOriginal) {
-    for (const [key, val] of Object.entries(record._rawOriginal)) {
-      if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === clean) {
-        return val ?? '';
-      }
-    }
-  }
-
-  // Fallback by standard column index if unrecognized and within standard 13 columns
-  const standardFields: (keyof NatRecord)[] = [
-    'ID_No', 'LastName', 'FirstName', 'Sex', 'Fed', 'Clubnumber',
-    'ClubName', 'Birthday', 'Rtg_Nat', 'Fide_No', 'Rtg_Int', 'Title', 'K'
-  ];
-  if (columnIndex < standardFields.length && standardFields[columnIndex]) {
-    const field = standardFields[columnIndex];
-    return record[field] as (string | number);
-  }
-
-  return '';
-}
-
-/**
  * Builds an XLSX Workbook containing Sheet 1 (Nat) and Sheet 2 (Help)
- * When a custom template is provided, the output dynamically conforms to the custom template's
- * column order, headers, and sheet layout.
  */
-export function buildNatWorkbook(records: NatRecord[], templateWorkbook?: XLSX.WorkBook | null): XLSX.WorkBook {
-  const isCustomTemplate = !!templateWorkbook;
-  const template = templateWorkbook || getDefaultNatTemplateWorkbook();
+export function buildNatWorkbook(records: NatRecord[]): XLSX.WorkBook {
+  const template = getDefaultNatTemplateWorkbook();
   const wb = XLSX.utils.book_new();
 
-  // Find target sheet: match 'Nat' (case-insensitive) or default to the 1st sheet
-  const targetSheetName = template.SheetNames.find(s => s.toLowerCase() === 'nat') || template.SheetNames[0] || 'Nat';
-  const srcSheet = template.Sheets[targetSheetName];
-
-  // Extract custom template headers if available
-  let outputHeaders = NAT_HEADERS;
-  let customCols = srcSheet?.['!cols'];
-
-  if (isCustomTemplate && srcSheet) {
-    const rawData: any[][] = XLSX.utils.sheet_to_json(srcSheet, { header: 1 });
-    const headerRow = (rawData[0] || []).map(cell => String(cell ?? '').trim());
-    if (headerRow.length > 0 && headerRow.some(h => h.length > 0)) {
-      outputHeaders = headerRow;
-    }
-  }
-
-  // Build rows dynamically based on the target template headers
+  // Build rows for Sheet 1 (Nat) with exact 13 columns
   const natData: (string | number)[][] = [
-    outputHeaders,
-    ...records.map(record =>
-      outputHeaders.map((header, colIdx) => mapRecordToColumn(record, header, colIdx))
-    ),
+    NAT_HEADERS,
+    ...records.map(record => [
+      record.ID_No,
+      record.LastName,
+      record.FirstName,
+      record.Sex,
+      record.Fed,
+      record.Clubnumber,
+      record.ClubName,
+      record.Birthday,
+      record.Rtg_Nat,
+      record.Fide_No,
+      record.Rtg_Int,
+      record.Title,
+      record.K,
+    ]),
   ];
 
   const wsNat = XLSX.utils.aoa_to_sheet(natData);
 
-  // Preserve or set column widths
-  if (customCols && customCols.length > 0) {
-    wsNat['!cols'] = customCols;
-  } else {
-    wsNat['!cols'] = [
-      { wch: 8 },  // Col 0
-      { wch: 18 }, // Col 1
-      { wch: 22 }, // Col 2
-      { wch: 6 },  // Col 3
-      { wch: 6 },  // Col 4
-      { wch: 10 }, // Col 5
-      { wch: 32 }, // Col 6
-      { wch: 12 }, // Col 7
-      { wch: 9 },  // Col 8
-      { wch: 11 }, // Col 9
-      { wch: 9 },  // Col 10
-      { wch: 8 },  // Col 11
-      { wch: 6 },  // Col 12
-    ];
-  }
+  // Swiss-Manager standard column widths
+  wsNat['!cols'] = [
+    { wch: 8 },  // Col 0: ID_No
+    { wch: 18 }, // Col 1: Last Name
+    { wch: 22 }, // Col 2: First Name
+    { wch: 6 },  // Col 3: Sex
+    { wch: 6 },  // Col 4: Fed
+    { wch: 10 }, // Col 5: Clubnumber
+    { wch: 32 }, // Col 6: ClubName
+    { wch: 12 }, // Col 7: Birthday
+    { wch: 9 },  // Col 8: Rtg_Nat
+    { wch: 11 }, // Col 9: Fide_No
+    { wch: 9 },  // Col 10: Rtg_Int
+    { wch: 8 },  // Col 11: Title
+    { wch: 6 },  // Col 12: K
+  ];
 
-  XLSX.utils.book_append_sheet(wb, wsNat, targetSheetName);
+  XLSX.utils.book_append_sheet(wb, wsNat, 'Nat');
 
-  // Preserve or add Sheet 2: Help from template
+  // Sheet 2: Help from bundled template or fallback
   if (template.Sheets['Help']) {
     XLSX.utils.book_append_sheet(wb, template.Sheets['Help'], 'Help');
-  } else if (!isCustomTemplate) {
+  } else {
     const wsHelp = XLSX.utils.aoa_to_sheet(HELP_SHEET_ROWS);
     wsHelp['!cols'] = [{ wch: 80 }];
     XLSX.utils.book_append_sheet(wb, wsHelp, 'Help');
-  }
-
-  // Preserve any other custom sheets from template
-  for (const sheetName of template.SheetNames) {
-    if (sheetName !== targetSheetName && sheetName !== 'Help' && template.Sheets[sheetName]) {
-      XLSX.utils.book_append_sheet(wb, template.Sheets[sheetName], sheetName);
-    }
   }
 
   return wb;
 }
 
 /**
- * Downloads a clean, blank copy of the official default Swiss-Manager NAT template (.xls)
- */
-export function downloadBlankDefaultTemplate(): void {
-  const wb = getDefaultNatTemplateWorkbook();
-  const wbout = XLSX.write(wb, { bookType: 'biff8', type: 'array' });
-  const blob = new Blob([wbout], { type: 'application/octet-stream' });
-  downloadBlob(blob, 'Nat_File_Default_Template.xls');
-}
-
-/**
  * Generates binary Excel 97-2003 BIFF8 (.xls) Blob
  */
-export function generateNatXlsBlob(records: NatRecord[], templateWorkbook?: XLSX.WorkBook | null): Blob {
-  const wb = buildNatWorkbook(records, templateWorkbook);
+export function generateNatXlsBlob(records: NatRecord[]): Blob {
+  const wb = buildNatWorkbook(records);
   // bookType 'biff8' generates true binary Excel 97-2003 format required by Swiss-Manager
   const wbout = XLSX.write(wb, { bookType: 'biff8', type: 'array' });
   return new Blob([wbout], { type: 'application/octet-stream' });
@@ -257,8 +154,8 @@ export function generateNatXlsBlob(records: NatRecord[], templateWorkbook?: XLSX
 /**
  * Generates modern .xlsx Blob
  */
-export function generateNatXlsxBlob(records: NatRecord[], templateWorkbook?: XLSX.WorkBook | null): Blob {
-  const wb = buildNatWorkbook(records, templateWorkbook);
+export function generateNatXlsxBlob(records: NatRecord[]): Blob {
+  const wb = buildNatWorkbook(records);
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   return new Blob([wbout], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -308,7 +205,7 @@ export function downloadBlob(blob: Blob, filename: string) {
     }
   }, 500);
 
-  // Revoke URL after 60 seconds (revoking after 1s causes "Failed - Network Error" on many systems)
+  // Revoke URL after 60 seconds
   setTimeout(() => {
     try {
       URL.revokeObjectURL(url);
@@ -324,10 +221,9 @@ export function downloadBlob(blob: Blob, filename: string) {
  */
 export function downloadNatXls(
   records: NatRecord[],
-  filename = 'Nat_File_Master.xls',
-  templateWorkbook?: XLSX.WorkBook | null
+  filename = 'Nat_File_Master.xls'
 ): void {
-  const wb = buildNatWorkbook(records, templateWorkbook);
+  const wb = buildNatWorkbook(records);
 
   // Attempt 1: SheetJS official writeFile
   try {
@@ -350,10 +246,9 @@ export function downloadNatXls(
  */
 export function downloadNatXlsx(
   records: NatRecord[],
-  filename = 'Nat_File_Master.xlsx',
-  templateWorkbook?: XLSX.WorkBook | null
+  filename = 'Nat_File_Master.xlsx'
 ): void {
-  const wb = buildNatWorkbook(records, templateWorkbook);
+  const wb = buildNatWorkbook(records);
 
   // Attempt 1: SheetJS official writeFile
   try {
@@ -378,10 +273,9 @@ export function downloadNatXlsx(
  */
 export async function shareNatFile(
   records: NatRecord[],
-  filename = 'Nat_File.xls',
-  templateWorkbook?: XLSX.WorkBook | null
+  filename = 'Nat_File.xls'
 ): Promise<boolean> {
-  const blob = generateNatXlsBlob(records, templateWorkbook);
+  const blob = generateNatXlsBlob(records);
   const file = new File([blob], filename, { type: 'application/vnd.ms-excel' });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {

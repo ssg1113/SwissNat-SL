@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
-import { UploadCloud, Link as LinkIcon, CheckCircle, CheckCircle2, AlertCircle, Sparkles, RefreshCw, Clipboard, ExternalLink, HelpCircle, Download, FileSpreadsheet, Table, Trash2, FileCheck } from 'lucide-react';
+import { UploadCloud, Link as LinkIcon, CheckCircle, CheckCircle2, AlertCircle, Sparkles, RefreshCw, Clipboard, ExternalLink, HelpCircle, Download, FileSpreadsheet, Table } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { autoDetectColumns, sanitizePlayerRow } from '../core/sanitizer';
 import type { RawPlayerRow, NatRecord, ColumnMapping, SplitMode } from '../core/types';
-import { downloadNatXls, downloadNatXlsx, downloadBlankDefaultTemplate } from '../core/natBuilder';
+import { downloadNatXls, downloadNatXlsx } from '../core/natBuilder';
 
 interface ImportTabProps {
   onRecordsImported: (records: NatRecord[], rawData: RawPlayerRow[], mapping: ColumnMapping) => void;
   splitMode: SplitMode;
   currentMapping: ColumnMapping | null;
-  onCustomTemplateLoaded: (wb: XLSX.WorkBook, filename: string) => void;
-  customTemplateName?: string | null;
-  customTemplateWorkbook?: XLSX.WorkBook | null;
-  activeTemplateMode?: 'default' | 'custom';
-  onSelectTemplateMode?: (mode: 'default' | 'custom') => void;
-  onRemoveCustomTemplate?: () => void;
   currentRecords?: NatRecord[];
   onGoToTable?: () => void;
   onNotify?: (msg: string) => void;
@@ -24,12 +18,6 @@ export const ImportTab: React.FC<ImportTabProps> = ({
   onRecordsImported,
   splitMode,
   currentMapping,
-  onCustomTemplateLoaded,
-  customTemplateName,
-  customTemplateWorkbook,
-  activeTemplateMode = 'default',
-  onSelectTemplateMode,
-  onRemoveCustomTemplate,
   currentRecords,
   onGoToTable,
   onNotify,
@@ -124,25 +112,6 @@ export const ImportTab: React.FC<ImportTabProps> = ({
     reader.readAsArrayBuffer(file);
   };
 
-  // Handle Custom NAT Template Upload (US-03)
-  const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        onCustomTemplateLoaded(workbook, file.name);
-        setSuccessMessage(`Custom template "${file.name}" loaded successfully! Sheet 2 (Help) and custom formatting will be preserved on export.`);
-        setErrorMessage(null);
-      } catch (err: any) {
-        setErrorMessage(`Failed to load custom template: ${err.message}`);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
 
   // Handle Fast Clipboard Paste (Google Sheet TSV / CSV)
   const handleProcessClipboard = () => {
@@ -337,14 +306,11 @@ export const ImportTab: React.FC<ImportTabProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            {/* Primary Download Button (Current Active Template) */}
             <button
               onClick={() => {
                 try {
-                  const effectiveWb = activeTemplateMode === 'custom' && customTemplateWorkbook ? customTemplateWorkbook : null;
-                  downloadNatXls(currentRecords, 'Nat_File_Master.xls', effectiveWb);
-                  const modeText = activeTemplateMode === 'custom' && customTemplateName ? `Custom (${customTemplateName})` : 'Default';
-                  onNotify?.(`Downloaded "Nat_File_Master.xls" using ${modeText} template (${currentRecords.length} players) ready for Swiss-Manager!`);
+                  downloadNatXls(currentRecords, 'Nat_File_Master.xls');
+                  onNotify?.(`Downloaded "Nat_File_Master.xls" (${currentRecords.length} players) ready for Swiss-Manager!`);
                 } catch (err: any) {
                   console.error('Download XLS error:', err);
                   alert(`Download failed: ${err.message || 'Unknown error'}`);
@@ -366,46 +332,13 @@ export const ImportTab: React.FC<ImportTabProps> = ({
               title="Download Swiss-Manager compatible Excel 97-2003 BIFF8 .xls file"
             >
               <Download size={16} strokeWidth={2.5} />
-              Download .xls ({currentRecords.length}) {activeTemplateMode === 'custom' ? '[Custom]' : ''}
+              Download .xls ({currentRecords.length})
             </button>
-
-            {/* If Custom Template is active, also offer direct Default Template download */}
-            {customTemplateWorkbook && activeTemplateMode === 'custom' && (
-              <button
-                onClick={() => {
-                  try {
-                    downloadNatXls(currentRecords, 'Nat_File_Master_Default.xls', null);
-                    onNotify?.(`Downloaded "Nat_File_Master_Default.xls" using Official Default template (${currentRecords.length} players)!`);
-                  } catch (err: any) {
-                    console.error('Download Default XLS error:', err);
-                    alert(`Download failed: ${err.message || 'Unknown error'}`);
-                  }
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '10px 14px',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-card)',
-                  color: 'var(--text-main)',
-                  border: '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                }}
-                title="Download using official default Swiss-Manager template instead of custom template"
-              >
-                <Download size={14} color="var(--accent-gold)" />
-                Download Default .xls
-              </button>
-            )}
 
             <button
               onClick={() => {
                 try {
-                  const effectiveWb = activeTemplateMode === 'custom' && customTemplateWorkbook ? customTemplateWorkbook : null;
-                  downloadNatXlsx(currentRecords, 'Nat_File_Master.xlsx', effectiveWb);
+                  downloadNatXlsx(currentRecords, 'Nat_File_Master.xlsx');
                   onNotify?.(`Downloaded "Nat_File_Master.xlsx" (${currentRecords.length} players)`);
                 } catch (err: any) {
                   console.error('Download XLSX error:', err);
@@ -714,235 +647,7 @@ export const ImportTab: React.FC<ImportTabProps> = ({
         </div>
       )}
 
-      {/* NAT Export Template Management (Default & Custom) */}
-      <div className="glass-panel" style={{ padding: '20px 22px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--accent-purple-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--accent-purple)',
-            }}>
-              <UploadCloud size={18} />
-            </div>
-            <div>
-              <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-                NAT File Export Template Management
-              </h4>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                Outputs can follow the official Swiss-Manager default template or any custom layout you upload.
-              </p>
-            </div>
-          </div>
 
-          <button
-            onClick={() => {
-              downloadBlankDefaultTemplate();
-              onNotify?.('Downloaded official Swiss-Manager blank NAT template (.xls)');
-            }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '6px 12px',
-              fontSize: 12,
-              fontWeight: 600,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--border-color)',
-              cursor: 'pointer',
-            }}
-            title="Download the official blank Swiss-Manager Nat File template (.xls) with Sheet 1 (Nat) and Sheet 2 (Help)"
-          >
-            <Download size={13} color="var(--accent-gold)" />
-            Download Blank Default Template (.xls)
-          </button>
-        </div>
-
-        {/* Two-Column Template Status Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-          {/* Card 1: Official Default Template */}
-          <div style={{
-            background: activeTemplateMode === 'default' ? 'var(--bg-card)' : 'var(--bg-secondary)',
-            border: activeTemplateMode === 'default' ? '2px solid var(--accent-gold)' : '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '14px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            gap: 10,
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)' }}>
-                  Official Default Template
-                </span>
-                {activeTemplateMode === 'default' && (
-                  <span className="badge badge-gold" style={{ fontSize: 10, padding: '2px 7px' }}>
-                    Active Output
-                  </span>
-                )}
-              </div>
-              <p style={{ fontSize: 11.5, color: 'var(--text-dim)', lineHeight: 1.4, margin: 0 }}>
-                <code>Nat File - Last Name &amp; First Name.xls</code> (BIFF8). The official Swiss-Manager 13-column standard with Help sheet.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              {customTemplateName && activeTemplateMode !== 'default' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTemplateMode?.('default');
-                    onNotify?.('Switched export output to Official Default Template');
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'var(--accent-gold)',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Use Default Output
-                </button>
-              ) : (
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-gold)' }}>
-                  ✓ Output will generate with default template
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Custom Template */}
-          <div style={{
-            background: activeTemplateMode === 'custom' ? 'var(--bg-card)' : 'var(--bg-secondary)',
-            border: activeTemplateMode === 'custom' ? '2px solid var(--accent-emerald)' : '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '14px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            gap: 10,
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)' }}>
-                  Custom NAT Template
-                </span>
-                {customTemplateName ? (
-                  activeTemplateMode === 'custom' ? (
-                    <span className="badge badge-emerald" style={{ fontSize: 10, padding: '2px 7px' }}>
-                      Active Output
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: 10, color: 'var(--text-dim)', background: 'var(--bg-card)', padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border-color)' }}>
-                      Loaded (Inactive)
-                    </span>
-                  )
-                ) : (
-                  <span style={{ fontSize: 10, color: 'var(--text-subtle)' }}>None Loaded</span>
-                )}
-              </div>
-
-              {customTemplateName ? (
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-main)', margin: '0 0 2px' }}>
-                    📁 {customTemplateName}
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--text-dim)', margin: 0 }}>
-                    Columns dynamically remapped to your template. Held in-memory only (never stored permanently).
-                  </p>
-                </div>
-              ) : (
-                <p style={{ fontSize: 11.5, color: 'var(--text-dim)', lineHeight: 1.4, margin: 0 }}>
-                  Need inverted columns (First Name before Last Name) or custom headers? Upload a template file here.
-                </p>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-              <label style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 12px',
-                fontSize: 11.5,
-                fontWeight: 700,
-                borderRadius: 'var(--radius-sm)',
-                background: customTemplateName ? 'var(--bg-card)' : 'var(--accent-purple-light)',
-                color: customTemplateName ? 'var(--text-main)' : 'var(--accent-purple)',
-                border: '1px solid ' + (customTemplateName ? 'var(--border-color)' : 'var(--accent-purple-border)'),
-                cursor: 'pointer',
-              }}>
-                <UploadCloud size={13} />
-                {customTemplateName ? 'Replace Template' : 'Upload Template'}
-                <input
-                  type="file"
-                  accept=".xls,.xlsx"
-                  onChange={handleTemplateUpload}
-                  style={{ display: 'none' }}
-                />
-              </label>
-
-              {customTemplateName && (
-                <>
-                  {activeTemplateMode !== 'custom' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTemplateMode?.('custom');
-                        onNotify?.(`Switched export output to Custom Template (${customTemplateName})`);
-                      }}
-                      style={{
-                        padding: '6px 10px',
-                        fontSize: 11.5,
-                        fontWeight: 700,
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--accent-emerald)',
-                        color: '#ffffff',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Use Custom
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => onRemoveCustomTemplate?.()}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: '6px 10px',
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--accent-rose-light)',
-                      color: 'var(--accent-rose-dark)',
-                      border: '1px solid var(--accent-rose-border)',
-                      cursor: 'pointer',
-                    }}
-                    title="Remove custom template and revert to default"
-                  >
-                    <Trash2 size={12} />
-                    Remove
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {currentMapping && (
         <div className="glass-panel" style={{ padding: 24 }}>

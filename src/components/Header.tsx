@@ -2,19 +2,15 @@ import React from 'react';
 import { Download, Share2, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 import type { NatRecord } from '../core/types';
 import { downloadNatXls, downloadNatXlsx, shareNatFile } from '../core/natBuilder';
-import type * as XLSX from 'xlsx';
-
 interface HeaderProps {
   records: NatRecord[];
   selectedCategory: string;
-  customTemplateWorkbook?: XLSX.WorkBook | null;
   onNotify?: (msg: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   records,
   selectedCategory,
-  customTemplateWorkbook,
   onNotify,
 }) => {
   const [sharing, setSharing] = React.useState(false);
@@ -30,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
       const filename = selectedCategory === 'all'
         ? 'Nat_File_Master.xls'
         : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xls`;
-      downloadNatXls(filteredRecords, filename, customTemplateWorkbook);
+      downloadNatXls(filteredRecords, filename);
       onNotify?.(`Downloaded "${filename}" (${filteredRecords.length} players) ready for Swiss-Manager!`);
     } catch (err: any) {
       console.error('Download XLS error:', err);
@@ -44,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
       const filename = selectedCategory === 'all'
         ? 'Nat_File_Master.xlsx'
         : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-      downloadNatXlsx(filteredRecords, filename, customTemplateWorkbook);
+      downloadNatXlsx(filteredRecords, filename);
       onNotify?.(`Downloaded "${filename}" (${filteredRecords.length} players)`);
     } catch (err: any) {
       console.error('Download XLSX error:', err);
@@ -59,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
       const filename = selectedCategory === 'all'
         ? 'Nat_File_Master.xls'
         : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xls`;
-      const res = await shareNatFile(filteredRecords, filename, customTemplateWorkbook);
+      const res = await shareNatFile(filteredRecords, filename);
       setShareSuccess(res);
       if (res) {
         onNotify?.('NAT file shared successfully!');

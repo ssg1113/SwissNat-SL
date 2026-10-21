@@ -4,18 +4,11 @@ import type { NatRecord } from '../core/types';
 import { downloadNatXls, downloadNatXlsx } from '../core/natBuilder';
 import { recalculateRecordFlags, getClubNumberForCategory } from '../core/sanitizer';
 import { cleanSchoolName } from '../core/transliterate';
-import type * as XLSX from 'xlsx';
-
 interface NatTableProps {
   records: NatRecord[];
   onRecordsChange: (updated: NatRecord[]) => void;
   selectedCategory: string;
   onSelectCategory: (cat: string) => void;
-  customTemplateWorkbook?: XLSX.WorkBook | null;
-  customTemplateName?: string | null;
-  activeTemplateMode?: 'default' | 'custom';
-  onSelectTemplateMode?: (mode: 'default' | 'custom') => void;
-  onRemoveCustomTemplate?: () => void;
   onNotify?: (msg: string) => void;
 }
 
@@ -24,11 +17,6 @@ export const NatTable: React.FC<NatTableProps> = ({
   onRecordsChange,
   selectedCategory,
   onSelectCategory,
-  customTemplateWorkbook,
-  customTemplateName,
-  activeTemplateMode = 'default',
-  onSelectTemplateMode,
-  onRemoveCustomTemplate,
   onNotify,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -199,17 +187,13 @@ export const NatTable: React.FC<NatTableProps> = ({
     onRecordsChange([...records, newRecord]);
   };
 
-  const templateLabel = activeTemplateMode === 'custom' && customTemplateName
-    ? `Custom (${customTemplateName})`
-    : 'Default';
-
   // Download division specific file
   const handleDownloadDivision = () => {
     if (filtered.length === 0) return;
     try {
       const filename = `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xls`;
-      downloadNatXls(filtered, filename, customTemplateWorkbook);
-      onNotify?.(`Exported division "${selectedCategory}" using ${templateLabel} template (${filtered.length} players) to ${filename}!`);
+      downloadNatXls(filtered, filename);
+      onNotify?.(`Exported division "${selectedCategory}" (${filtered.length} players) to ${filename}!`);
     } catch (err: any) {
       console.error('Export division error:', err);
       alert(`Export failed: ${err.message || 'Unknown error'}`);
@@ -220,8 +204,8 @@ export const NatTable: React.FC<NatTableProps> = ({
   const handleDownloadAllXls = () => {
     if (records.length === 0) return;
     try {
-      downloadNatXls(records, 'Nat_File_Master.xls', customTemplateWorkbook);
-      onNotify?.(`Downloaded Master NAT file using ${templateLabel} template (${records.length} players) ready for Swiss-Manager!`);
+      downloadNatXls(records, 'Nat_File_Master.xls');
+      onNotify?.(`Downloaded Master NAT file (${records.length} players) ready for Swiss-Manager!`);
     } catch (err: any) {
       console.error('Download master error:', err);
       alert(`Download failed: ${err.message || 'Unknown error'}`);
@@ -426,82 +410,6 @@ export const NatTable: React.FC<NatTableProps> = ({
               <Layers size={14} />
               Swap Names ({filtered.length})
             </button>
-          )}
-
-          {/* Template Switcher Pill (if custom template loaded) */}
-          {customTemplateName && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '2px 4px',
-              gap: 4,
-            }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', paddingLeft: 4 }}>
-                Template:
-              </span>
-              <button
-                type="button"
-                onClick={() => onSelectTemplateMode?.('default')}
-                style={{
-                  padding: '4px 8px',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  borderRadius: 'var(--radius-sm)',
-                  background: activeTemplateMode === 'default' ? 'var(--bg-secondary)' : 'transparent',
-                  color: activeTemplateMode === 'default' ? 'var(--accent-gold)' : 'var(--text-muted)',
-                  border: activeTemplateMode === 'default' ? '1px solid var(--border-color)' : '1px solid transparent',
-                  boxShadow: activeTemplateMode === 'default' ? 'var(--shadow-xs)' : 'none',
-                  cursor: 'pointer',
-                }}
-                title="Use official default Swiss-Manager template"
-              >
-                Default
-              </button>
-              <button
-                type="button"
-                onClick={() => onSelectTemplateMode?.('custom')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '4px 8px',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  borderRadius: 'var(--radius-sm)',
-                  background: activeTemplateMode === 'custom' ? 'var(--bg-secondary)' : 'transparent',
-                  color: activeTemplateMode === 'custom' ? 'var(--accent-emerald-dark)' : 'var(--text-muted)',
-                  border: activeTemplateMode === 'custom' ? '1px solid var(--accent-emerald-border)' : '1px solid transparent',
-                  boxShadow: activeTemplateMode === 'custom' ? 'var(--shadow-xs)' : 'none',
-                  cursor: 'pointer',
-                }}
-                title={`Use custom template: ${customTemplateName}`}
-              >
-                <span>Custom</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveCustomTemplate?.();
-                  }}
-                  title="Remove custom template"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 14,
-                    height: 14,
-                    borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.08)',
-                    fontSize: 9,
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </span>
-              </button>
-            </div>
           )}
 
           {/* Division Export */}
