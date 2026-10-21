@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Share2, FileSpreadsheet, Award, CheckCircle2 } from 'lucide-react';
+import { Download, Share2, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 import type { NatRecord } from '../core/types';
 import { downloadNatXls, downloadNatXlsx, shareNatFile } from '../core/natBuilder';
 import type * as XLSX from 'xlsx';
@@ -95,19 +95,19 @@ export const Header: React.FC<HeaderProps> = ({
       }}>
         {/* Brand & Arbiter Badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 42,
-            height: 42,
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)',
-            color: '#ffffff',
-          }}>
-            <Award size={24} strokeWidth={2.2} />
-          </div>
+          <img
+            src="/SwissNat SL Icon.png"
+            alt="SwissNat SL Logo"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 'var(--radius-md)',
+              objectFit: 'cover',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+              display: 'block',
+              flexShrink: 0,
+            }}
+          />
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <h1 style={{
