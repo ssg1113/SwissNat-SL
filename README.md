@@ -1,6 +1,6 @@
-# ♟️ SwissNat SL
+# SwissNat SL
 
-### Smart Swiss-Manager NAT File Generator for Sri Lankan Chess Tournaments
+### Smart Swiss-Manager NAT File Generator for Chess Tournaments
 
 **SwissNat SL** is a web and mobile application project designed to help chess pairing arbiters turn inconsistent tournament registration data into a clean, Swiss-Manager-compatible **NAT player list**. It focuses on the challenges of Sri Lankan names, Sinhala and Tamil entries, school/club information, and strict legacy Excel import requirements.
 
@@ -9,16 +9,16 @@
 **Repository:** https://github.com/ssg1113/SwissNat-SL  
 **Web application:** https://swissnat-sl.vercel.app/
 
-## 💡 Why I Started This Project
+## Why I Started This Project
 
-As a **National Arbiter and chess pairing arbiter in Sri Lanka**, I regularly work with tournament registrations collected through Google Forms and Excel sheets. Before a tournament can be paired in **Swiss-Manager**, the registration data must be cleaned and converted into the exact format expected by its national rating/player-list import.
+As a **pairing arbiter**, I regularly work with tournament registrations collected through Google Forms and Excel sheets. Before a tournament can be paired in **Swiss-Manager**, the registration data must be cleaned and converted into the exact format expected by its national rating/player-list import.
 
 This sounds simple, but in real tournaments it can involve hundreds of registrations and hours of repetitive spreadsheet editing—often just before the first round, when time is limited.
 
 ### Real-World Problems
 
-1. **Names arrive in inconsistent formats.** Parents and players enter names with initials at the beginning or end, with or without dots and spaces. For example, `K.G.Banuja Binuwara`, `J.P. Anidu Harshitha Sandakan`, and `Odamsa K B V S` cannot all be split reliably by a simple spreadsheet formula.
-2. **Removing dots can accidentally merge initials and names.** A naive replacement can turn `K.G.Banuja` into `KGBanuja`, rather than the required `K G Banuja`.
+1. **Names arrive in inconsistent formats.** Parents and players enter names with initials at the beginning or end, with or without dots and spaces. For example, `S. S. Gayashan De Silva`, `S.S.Gayashan De Silva`, and `De Silva S S G` cannot all be split reliably by a simple spreadsheet formula.
+2. **Removing dots can accidentally merge initials and names.** A naive replacement can turn `S. S. Gayashan` into `SSGayashan`, rather than the required `S S Gayashan`. 
 3. **Sri Lankan surname conventions are complex.** Compound surnames such as `De Silva`, `De Zoysa`, and `Arachchi Mudiyanselage` need special handling, and an arbiter may prefer surname-first or initials-first arrangements.
 4. **Registrations contain mixed languages.** Player names and school names may be entered in Sinhala, Tamil, English, or a mixture, while the NAT import needs standardized English text.
 5. **FIDE details and dates are messy.** FIDE ID fields may contain `No`, `නැත`, a national ID number, or an incorrect value; ratings may be entered as `1416 blitz`; birthdays may use different date formats.
@@ -53,10 +53,10 @@ This sounds simple, but in real tournaments it can involve hundreds of registrat
 
 | Raw registration name | Intended cleaned form |
 | --- | --- |
-| `K.G.Banuja Binuwara` | `K G Banuja Binuwara` |
-| `J.P. Anidu Harshitha Sandakan` | `J P Anidu Harshitha Sandakan` |
-| `Karandeniya TNW` | `Karandeniya T N W` |
-| `G.W.W.D Dinupa Sithusahan De Silva` | Normalized initials with `De Silva` recognized as a compound surname |
+| `S.S.Gayashan` | `S S Gayashan` |
+| `S. S. Gayashan De Silva` | `S S Gayashan De Silva` |
+| `De Silva SSG` | `De Silva S S G` |
+| `S.S.Gayashan De Silva` | Normalized initials with `De Silva` recognized as a compound surname |
 
 Name splitting can be ambiguous; the **arbiter's editable review is the final authority**.
 
@@ -89,7 +89,7 @@ Name splitting can be ambiguous; the **arbiter's editable review is the final au
 
 Generate a workbook compatible with the specified Swiss-Manager national player-list workflow:
 
-- Excel **97–2003 BIFF8 `.xls`** export (and `.xlsx` export as specified in the SRS).
+- Excel **97–2003 `.xls`** export (and `.xlsx` export as specified in the SRS).
 - Sheet 1: **`Nat`**, with the exact **13 columns** shown below.
 - Sheet 2: **`Help`**, preserved from the supplied NAT template.
 - Combined `Last Name` + `First Name`: maximum **32 characters**.
@@ -236,8 +236,8 @@ Please **do not post real players' private registration details, dates of birth,
 
 ## 👨‍💻 Project Background
 
-Created by **Sandeepa Gayashan**, National Arbiter and pairing arbiter, to address repetitive data-cleaning problems encountered while preparing Sri Lankan chess tournaments.
+Created by **S S Gayashan**, IT Undergraduate, Chess pairing arbiter, to address repetitive data-cleaning problems encountered while preparing Sri Lankan chess tournaments.
 
 ---
 
-**SwissNat SL — From messy tournament registrations to cleaner, faster Swiss-Manager preparation.** ♟️
+**SwissNat SL - From messy tournament registrations to cleaner, faster Swiss-Manager preparation.** ♟️

@@ -1,7 +1,7 @@
 {
-  "name": "SwissNat SL — Pairing Arbiter Assistant",
+  "name": "SwissNat SL - Pairing Arbiter Assistant",
   "short_name": "SwissNat SL",
-  "description": "Smart Swiss-Manager NAT File Generator for Sri Lankan Chess Tournaments. Clean player names and export legacy .xls NAT files.",
+  "description": "Smart Swiss-Manager NAT File Generator for Chess Tournaments. Clean player names and export legacy .xls NAT files.",
   "start_url": "/",
   "id": "/",
   "scope": "/",
