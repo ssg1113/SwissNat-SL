@@ -121,12 +121,9 @@ export const Header: React.FC<HeaderProps> = ({
               }}>
                 SwissNat <span style={{ color: 'var(--accent-gold)' }}>SL</span>
               </h1>
-              <span className="badge badge-gold" style={{ fontSize: 10, padding: '2px 8px' }}>
-                Swiss-Manager BIFF8 .xls
-              </span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>
-              Dedicated Pairing Arbiter Assistant • Sri Lankan Chess Tournaments (CFSL)
+              Dedicated Pairing Arbiter Assistant
             </p>
           </div>
         </div>

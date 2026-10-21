@@ -82,4 +82,27 @@ describe('natBuilder download generation', () => {
     expect(blobXls.size).toBeGreaterThan(0);
     console.log('Blob size with custom template:', blobXls.size);
   });
+
+  it('correctly maps output to a custom template with inverted names and extra columns', () => {
+    // Create a mock custom template workbook with inverted First Name / Last Name and Category column
+    const customWb = XLSX.utils.book_new();
+    const customHeaders = ['ID_No', 'First Name', 'Last Name', 'Sex', 'Category', 'ClubName'];
+    const customSheet = XLSX.utils.aoa_to_sheet([customHeaders]);
+    XLSX.utils.book_append_sheet(customWb, customSheet, 'CustomNat');
+
+    const resultWb = buildNatWorkbook(sampleRecords, customWb);
+    expect(resultWb.SheetNames).toContain('CustomNat');
+    
+    const outData = XLSX.utils.sheet_to_json<any[]>(resultWb.Sheets['CustomNat'], { header: 1 });
+    expect(outData[0]).toEqual(customHeaders);
+    // Row 1 should have: ID_No = '1', First Name = 'Ruwanpura Jesitha', Last Name = 'Dewsithu', Sex = '', Category = 'Under 09 Open', ClubName = 'Holy Cross College Kalutara'
+    expect(outData[1]).toEqual([
+      '1',
+      'Ruwanpura Jesitha',
+      'Dewsithu',
+      '',
+      'Under 09 Open',
+      'Holy Cross College Kalutara',
+    ]);
+  });
 });
