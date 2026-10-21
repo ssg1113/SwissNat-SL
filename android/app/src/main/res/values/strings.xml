@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SwissNat SL</string>
+    <string name="title_activity_main">SwissNat SL</string>
+    <string name="package_name">com.swissnatsl.app</string>
+    <string name="custom_url_scheme">com.swissnatsl.app</string>
+</resources>
