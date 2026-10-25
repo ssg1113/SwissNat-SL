@@ -48,6 +48,7 @@ export interface ColumnMapping {
   birthday: string;
   gender: string;
   category: string;
+  event?: string; // Playing event column (Blitz only / Rapid only / Both)
   school: string;
   fideId: string;
   rating: string;

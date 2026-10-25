@@ -112,7 +112,10 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         )}
 
         {activeTab === 'help' && (
-          <MobileHelpView onOpenInstall={() => setIsInstallOpen(true)} />
+          <MobileHelpView
+            onOpenInstall={() => setIsInstallOpen(true)}
+            onGoToImport={() => setActiveTab('import')}
+          />
         )}
       </main>
 

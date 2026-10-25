@@ -688,6 +688,12 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
               <span style={{ color: 'var(--text-dim)', display: 'block' }}>School / Club Header:</span>
               <span style={{ color: 'var(--accent-emerald-dark)', fontWeight: 700 }}>{currentMapping.school || '(Auto detected)'}</span>
             </div>
+            {currentMapping.event && (
+              <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-dim)', display: 'block' }}>Playing Event Header:</span>
+                <span style={{ color: 'var(--accent-rose)', fontWeight: 700 }}>{currentMapping.event}</span>
+              </div>
+            )}
             <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
               <span style={{ color: 'var(--text-dim)', display: 'block' }}>FIDE ID Header:</span>
               <span style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>{currentMapping.fideId || '(Auto detected)'}</span>

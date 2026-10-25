@@ -594,6 +594,24 @@ export const InstallModal: React.FC<InstallModalProps> = ({
                         GitHub Releases
                       </a>
                     </div>
+
+                    <div
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'var(--bg-card)',
+                        border: '1px dashed var(--border-color)',
+                        fontSize: 11,
+                        color: 'var(--text-dim)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 6,
+                      }}
+                    >
+                      <span>Build APK locally: <code>npm run build:apk</code> or run <code>build-apk.bat</code></span>
+                    </div>
                   </div>
                 </div>
               )}

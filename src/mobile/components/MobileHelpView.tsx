@@ -1,11 +1,13 @@
 import React from 'react';
 import { Sparkles, BookOpen, Smartphone, Download, ArrowRight } from 'lucide-react';
+import { SiteInfoSection } from '../../shared/components/SiteInfoSection';
 
 interface MobileHelpViewProps {
   onOpenInstall?: () => void;
+  onGoToImport?: () => void;
 }
 
-export const MobileHelpView: React.FC<MobileHelpViewProps> = ({ onOpenInstall }) => {
+export const MobileHelpView: React.FC<MobileHelpViewProps> = ({ onOpenInstall, onGoToImport }) => {
   return (
     <div style={{ padding: '16px 14px 80px', display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Install App Card */}
@@ -103,6 +105,8 @@ export const MobileHelpView: React.FC<MobileHelpViewProps> = ({ onOpenInstall })
           <li>9-digit National Identity Card (NIC) numbers are automatically filtered from FIDE ID.</li>
         </ul>
       </div>
+
+      <SiteInfoSection onGetStarted={onGoToImport} />
 
       <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 11, color: 'var(--text-dim)' }}>
         Created &amp; Developed by <strong>S S Gayashan De Silva</strong> &bull; National Arbiter &bull; Sri Lanka

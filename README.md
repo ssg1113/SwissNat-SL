@@ -23,7 +23,7 @@ This sounds simple, but in real tournaments it can involve hundreds of registrat
 4. **Registrations contain mixed languages.** Player names and school names may be entered in Sinhala, Tamil, English, or a mixture, while the NAT import needs standardized English text.
 5. **FIDE details and dates are messy.** FIDE ID fields may contain `No`, `නැත`, a national ID number, or an incorrect value; ratings may be entered as `1416 blitz`; birthdays may use different date formats.
 6. **Swiss-Manager has a strict import structure.** The NAT workbook needs exact column names and order, constrained text lengths, an eight-digit birthday, and the correct legacy `.xls` format. A visually correct spreadsheet may still fail to import.
-7. **Tournaments have multiple divisions.** Preparing separate player lists for Under-06, Under-08, Under-10, Under-12, Under-15, boys' and girls' events takes additional manual work.
+7. **Tournaments have multiple divisions and events.** Preparing separate player lists for Under-06, Under-08, Under-10, Under-12, Under-15, boys' and girls' sections takes additional manual work, and many tournaments also split each section into **Blitz only**, **Rapid only**, and **Both events** entries that need different club numbers.
 8. **Work often happens away from a laptop.** Arbiters may need to process a sheet on a phone, download the file, or send it to another official through WhatsApp, Telegram, email, or Drive.
 9. **Internet access can be unreliable at tournament venues.** Core file cleaning should not depend on a constant network connection.
 
@@ -36,7 +36,7 @@ This sounds simple, but in real tournaments it can involve hundreds of registrat
 - Upload registration files in `.xlsx`, `.xls`, or `.csv` format.
 - Import Google Form response sheets through a Google Sheets link.
 - Support public CSV export links and a Google Apps Script route for restricted sheets.
-- Automatically detect and map common English/Sinhala form headers, including player name, birthday, gender, school/club, FIDE ID, rating, and category.
+- Automatically detect and map common English/Sinhala form headers, including player name, birthday, gender, school/club, FIDE ID, rating, category, and playing event (for example `Playing Event / ක්‍රීඩා කරන ඉසව්ව`).
 - Accept a user-supplied **`Nat File - Last Name & First Name.xls`** template.
 
 ### 🧹 Name Cleaning and Sri Lankan Name Splitting
@@ -84,6 +84,25 @@ Name splitting can be ambiguous; the **arbiter's editable review is the final au
 - Filter registration records by age division and gender.
 - Generate a **master NAT file** for all players or separate files for selected divisions.
 - Support common youth divisions such as Under-06, Under-08, Under-10, Under-12, and Under-15, according to the configured registration categories.
+- Separate **Blitz only**, **Rapid only**, and **Both events** entries, whether the event is written inside the category (`Under 06 Boys - Blitz Event Only`) or collected in its own column (`Playing Event`). When it is a separate column, the event is added to the category, for example `Under 10 Open (2016 & 2017) - Rapid Event Only`.
+
+### 🔢 Automatic Club Numbers
+
+Swiss-Manager's `Clubnumber` column is filled automatically from the category, so every player in the same division shares the same number and divisions can be paired or filtered separately:
+
+- **Age** + **1** for boys/open or **2** for girls.
+- Plus a third digit when an event is given: **1** = Blitz only, **2** = Rapid only, **3** = Both events.
+
+| Category | Club number |
+| --- | --- |
+| `Under 06 Boys` | `61` |
+| `Under 06 Boys - Blitz Event Only` | `611` |
+| `Under 06 Boys - Rapid Event Only` | `612` |
+| `Under 06 Boys - Both Events` | `613` |
+| `Under 06 Girls` | `62` |
+| `Under 20 Girls - Both Events` | `2023` |
+
+Club numbers already present in the registration sheet are kept as entered, and editing a player's category or gender in the table recalculates the number.
 
 ### 📄 Swiss-Manager NAT Export
 
@@ -121,6 +140,7 @@ Generate a workbook compatible with the specified Swiss-Manager national player-
 - Planned Android/iOS app packaging through **React Native (Expo)**, as documented in the developer guide.
 - Client-side file processing for use in tournament halls with unstable internet.
 - Download generated files and share them using supported native mobile share options.
+- Built-in guide on the website (below the upload tool) and in the mobile **Help** tab: feature overview, step-by-step instructions, Swiss-Manager import steps, and an FAQ.
 - Optional AI-assisted processing where configured; essential cleaning must remain usable without AI or an internet connection.
 
 ## 🔄 Intended Workflow
@@ -202,6 +222,7 @@ The project specifications call for testing that covers:
 - Exact NAT column names, ordering, and sheet preservation.
 - BIFF8 file generation and **actual Swiss-Manager import**.
 - Age/gender division exports.
+- Event-based club numbers (Blitz only / Rapid only / Both events), including a separate `Playing Event` column.
 - Mobile upload, download, and sharing.
 - Offline operation and large registration sheets.
 

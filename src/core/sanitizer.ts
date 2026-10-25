@@ -250,7 +250,23 @@ export function sanitizeSex(genderVal: any, categoryHint?: string): string {
  * - Under 11 Girls --> 112
  * - Under 11 Boys  --> 111
  * - Over 11 Open   --> 212
+ *
+ * When the category names an event, a third digit is appended:
+ * Blitz only --> 1, Rapid only --> 2, Both events --> 3.
+ * - Under 06 Boys - Blitz Event Only --> 611
+ * - Under 06 Boys - Rapid Event Only --> 612
+ * - Under 20 Girls - Both Events     --> 2023
  */
+function getEventDigit(lower: string): string {
+  const isBlitz = lower.includes('blitz') || lower.includes('බ්ලිට්ස්');
+  const isRapid = lower.includes('rapid') || lower.includes('රැපිඩ්') || lower.includes('රැපිට්');
+  const isBoth = /\bboth\b/.test(lower) || lower.includes('දෙකම') || lower.includes('දෙකටම');
+  if (isBoth || (isBlitz && isRapid)) return '3';
+  if (isBlitz) return '1';
+  if (isRapid) return '2';
+  return '';
+}
+
 export function getClubNumberForCategory(categoryVal: any, genderHint?: string): string {
   if (!categoryVal && !genderHint) return '';
   const raw = String(categoryVal || '').trim();
@@ -283,7 +299,7 @@ export function getClubNumberForCategory(categoryVal: any, genderHint?: string):
     // Over categories formula: 200 + age + (isGirl ? 2 : 1)
     // E.g. "Over 11 Open" -> 200 + 11 + 1 = 212
     const genderOffset = isGirl ? 2 : 1;
-    return String(200 + age + genderOffset);
+    return String(200 + age + genderOffset) + getEventDigit(lower);
   }
 
   // 2. Check for "Under" categories (e.g. "Under 06 Girls", "Under 7 Boys", "Under 11 Girls", "U-11")
@@ -295,7 +311,7 @@ export function getClubNumberForCategory(categoryVal: any, genderHint?: string):
   if (underMatch) {
     const age = parseInt(underMatch[1], 10);
     const suffix = isGirl ? '2' : '1';
-    return `${age}${suffix}`;
+    return `${age}${suffix}${getEventDigit(lower)}`;
   }
 
   // Fallback if no numeric age found
@@ -528,9 +544,21 @@ export function autoDetectColumns(headers: string[]): ColumnMapping {
       mapping.gender = raw;
     }
 
+    // 6a. Playing Event (Blitz only / Rapid only / Both) - kept apart from the age category
+    const isEventHeader =
+      text.includes('event') ||
+      text.includes('ඉසව්ව') ||
+      text.includes('blitz') ||
+      text.includes('rapid') ||
+      text.includes('time control');
+    if (!mapping.event && isEventHeader) {
+      mapping.event = raw;
+    }
+
     // 6. Category / Age Group
     if (
       !mapping.category &&
+      !isEventHeader &&
       (text.includes('category') ||
         text.includes('division') ||
         text.includes('age group') ||
@@ -680,7 +708,13 @@ export function sanitizePlayerRow(
   const rawFullName = (mapping.fullName ? String(raw[mapping.fullName] ?? '').trim() : '') || String(raw.fullName ?? raw.rawName ?? '').trim();
   const rawBirthday = (mapping.birthday ? raw[mapping.birthday] : '') || (raw.birthday || raw.Birthday || '');
   const rawGender = (mapping.gender ? raw[mapping.gender] : '') || (raw.gender || raw.Sex || '');
-  const rawCategory = (mapping.category ? raw[mapping.category] : '') || (raw.category || raw.Category || '');
+  const rawAgeCategory = String((mapping.category ? raw[mapping.category] : '') || (raw.category || raw.Category || '')).trim();
+  const rawEvent = String((mapping.event ? raw[mapping.event] : '') || raw.event || '').trim();
+  // Event is appended to the category so each event becomes its own division and club number
+  // (e.g. "Under 06 Boys - Rapid Event Only" -> 612)
+  const rawCategory = rawEvent && !rawAgeCategory.toLowerCase().includes(rawEvent.toLowerCase())
+    ? [rawAgeCategory, rawEvent].filter(Boolean).join(' - ')
+    : rawAgeCategory;
   const rawSchool = (mapping.school ? raw[mapping.school] : '') || (raw.school || raw.ClubName || raw.rawSchool || '');
   let rawFideId = (mapping.fideId ? raw[mapping.fideId] : '') || (raw.fideId || raw.Fide_No || '');
   let rawRating = (mapping.rating ? raw[mapping.rating] : '') || (raw.rating || raw.Rtg_Int || '');

@@ -6,6 +6,7 @@ import { WebNatTable } from './components/WebNatTable';
 import { WebImportTab } from './components/WebImportTab';
 import { WebFooter } from './components/WebFooter';
 import { InstallModal } from '../shared/components/InstallModal';
+import { SiteInfoSection } from '../shared/components/SiteInfoSection';
 import type { NatRecord, RawPlayerRow, ColumnMapping, SplitMode } from '../core/types';
 
 export interface WebAppProps {
@@ -142,6 +143,10 @@ export const WebApp: React.FC<WebAppProps> = ({
             onGoToTable={() => setActiveTab('table')}
             onNotify={onNotify}
           />
+        )}
+
+        {activeTab === 'upload' && (
+          <SiteInfoSection onGetStarted={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         )}
 
         {activeTab === 'table' && (

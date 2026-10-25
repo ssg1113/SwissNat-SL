@@ -8,6 +8,8 @@
     "build": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit && vite build",
     "build:web": "vite build",
     "build:mobile": "npm run build && npx cap sync android",
+    "build:apk": "npm run build && npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "build:apk:release": "npm run build && npx cap sync android && cd android && gradlew.bat assembleRelease",
     "open:android": "npx cap open android",
     "sync:android": "npx cap sync android",
     "lint": "oxlint",
