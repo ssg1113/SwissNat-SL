@@ -1,7 +1,7 @@
 import React from 'react';
 import { Share2, Download, CheckCircle2, Smartphone } from 'lucide-react';
 import type { NatRecord } from '../../core/types';
-import { downloadNatXls, shareNatFile } from '../../core/natBuilder';
+import { exportNatFile, shareNatFile } from '../../core/natBuilder';
 
 interface MobileHeaderProps {
   records: NatRecord[];
@@ -41,13 +41,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (filtered.length === 0) return;
     const filename = selectedCategory === 'all'
       ? 'Nat_File_Master.xls'
       : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xls`;
-    downloadNatXls(filtered, filename);
-    onNotify?.(`Downloaded "${filename}" (${filtered.length} players)`);
+    try {
+      onNotify?.(await exportNatFile(filtered, filename, 'xls'));
+    } catch (err: any) {
+      console.error(err);
+      onNotify?.(`Download failed: ${err?.message || 'Unknown error'}`);
+    }
   };
 
   return (
@@ -129,7 +133,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             title="Install SwissNat SL App (Mobile / Tablet / PC)"
           >
             <Smartphone size={13} />
-            <span>Install</span>
+            <span>APK / App</span>
           </button>
         )}
 

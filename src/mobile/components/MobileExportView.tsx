@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Share2, Download, FileSpreadsheet, CheckCircle2, ShieldCheck, Users, HelpCircle } from 'lucide-react';
 import type { NatRecord } from '../../core/types';
-import { downloadNatXls, downloadNatXlsx, shareNatFile } from '../../core/natBuilder';
+import { exportNatFile, shareNatFile } from '../../core/natBuilder';
 
 interface MobileExportViewProps {
   records: NatRecord[];
@@ -47,22 +47,30 @@ export const MobileExportView: React.FC<MobileExportViewProps> = ({
     }
   };
 
-  const handleDownloadXls = () => {
+  const handleDownloadXls = async () => {
     if (filtered.length === 0) return;
     const filename = selectedCategory === 'all'
       ? 'Nat_File_Master.xls'
       : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xls`;
-    downloadNatXls(filtered, filename);
-    onNotify?.(`Downloaded "${filename}" (${filtered.length} players)`);
+    try {
+      onNotify?.(await exportNatFile(filtered, filename, 'xls'));
+    } catch (err: any) {
+      console.error(err);
+      onNotify?.(`Download failed: ${err?.message || 'Unknown error'}`);
+    }
   };
 
-  const handleDownloadXlsx = () => {
+  const handleDownloadXlsx = async () => {
     if (filtered.length === 0) return;
     const filename = selectedCategory === 'all'
       ? 'Nat_File_Master.xlsx'
       : `Nat_File_${selectedCategory.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-    downloadNatXlsx(filtered, filename);
-    onNotify?.(`Downloaded "${filename}" (${filtered.length} players)`);
+    try {
+      onNotify?.(await exportNatFile(filtered, filename, 'xlsx'));
+    } catch (err: any) {
+      console.error(err);
+      onNotify?.(`Download failed: ${err?.message || 'Unknown error'}`);
+    }
   };
 
   return (

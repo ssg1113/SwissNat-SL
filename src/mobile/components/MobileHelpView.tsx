@@ -11,66 +11,91 @@ export const MobileHelpView: React.FC<MobileHelpViewProps> = ({ onOpenInstall, o
   return (
     <div style={{ padding: '16px 14px 80px', display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Install App Card */}
-      {onOpenInstall && (
-        <div
-          className="glass-panel"
-          style={{
-            padding: 16,
-            background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(245, 158, 11, 0.04) 100%)',
-            border: '1px solid var(--accent-gold-border)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Smartphone size={18} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
-                Install SwissNat SL App
-              </h3>
-            </div>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: '2px 6px',
-                borderRadius: 8,
-                background: 'var(--accent-gold-light)',
-                color: 'var(--accent-gold-dark)',
-              }}
-            >
-              Offline Ready
-            </span>
+      <div
+        className="glass-panel"
+        style={{
+          padding: 16,
+          background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%)',
+          border: '1.5px solid var(--accent-gold)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Smartphone size={18} color="var(--accent-gold)" />
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              SwissNat SL for Mobile
+            </h3>
           </div>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              padding: '2px 7px',
+              borderRadius: 8,
+              background: 'var(--accent-gold)',
+              color: '#ffffff',
+            }}
+          >
+            Android APK
+          </span>
+        </div>
 
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-            Add SwissNat SL to your phone or tablet home screen for 1-tap launch in tournament halls with no internet.
-          </p>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0', lineHeight: 1.45 }}>
+          Download the Android APK to your phone for 1-tap launch, full offline data cleaning, and instant WhatsApp &amp; Telegram file sharing.
+        </p>
 
-          <button
-            type="button"
-            onClick={onOpenInstall}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <a
+            href="https://github.com/ssg1113/SwissNat-SL/releases/latest/download/SwissNat-SL.apk"
+            download="SwissNat-SL.apk"
             style={{
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              padding: '10px 14px',
+              padding: '11px 14px',
               borderRadius: 'var(--radius-md)',
-              background: 'var(--accent-gold)',
+              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
               color: '#ffffff',
               border: 'none',
-              fontWeight: 700,
-              fontSize: 13,
+              fontWeight: 800,
+              fontSize: 13.5,
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(217, 119, 6, 0.3)',
+              textDecoration: 'none',
+              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.35)',
             }}
           >
-            <Download size={15} />
-            <span>View Install Options (Mobile &amp; PC)</span>
-            <ArrowRight size={14} />
-          </button>
+            <Download size={16} strokeWidth={2.4} />
+            <span>Download Android APK (.apk)</span>
+          </a>
+
+          {onOpenInstall && (
+            <button
+              type="button"
+              onClick={onOpenInstall}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '9px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-main)',
+                border: '1px solid var(--border-color)',
+                fontWeight: 600,
+                fontSize: 12.5,
+                cursor: 'pointer',
+              }}
+            >
+              <span>Other Install Options (iOS Safari / PC)</span>
+              <ArrowRight size={13} />
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="glass-panel" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>

@@ -12,7 +12,20 @@ SwissNat SL is built as a hybrid cross-platform application using **Capacitor An
 
 ---
 
-## 🚀 Method 1: Build Using Android Studio (Recommended & Easiest)
+## ☁️ Method 0: Automatic Cloud Build via GitHub Actions (Recommended & Zero Setup)
+
+SwissNat SL includes a configured GitHub Actions workflow (`.github/workflows/build-apk.yml`).
+
+- **Automatic**: Every push to `main` or release tag compiles the Android APK in the GitHub cloud runner.
+- **Direct Download Link**: The latest APK is published automatically to GitHub Releases:
+  ```
+  https://github.com/ssg1113/SwissNat-SL/releases/latest/download/SwissNat-SL.apk
+  ```
+- **Manual Trigger**: Go to your GitHub repository &rarr; **Actions** &rarr; select **Build & Release Android APK** &rarr; click **Run workflow**.
+
+---
+
+## 🚀 Method 1: Build Using Android Studio (Recommended for Local Dev)
 
 Android Studio automatically manages Android SDKs, build-tools, and provides visual APK generation.
 

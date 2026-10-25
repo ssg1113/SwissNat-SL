@@ -215,6 +215,111 @@ export function downloadBlob(blob: Blob, filename: string) {
   }, 60000);
 }
 
+// ---------------------------------------------------------------------------
+// Native Android / iOS app (Capacitor) support
+// The Android WebView cannot save blob: downloads or share files through the
+// Web Share API, so inside the installed APK we use Capacitor plugins instead.
+// ---------------------------------------------------------------------------
+
+export type NatFileFormat = 'xls' | 'xlsx';
+
+/** True when running inside the installed Capacitor app (APK), not a browser. */
+export function isNativeApp(): boolean {
+  return typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+}
+
+function toBookType(format: NatFileFormat): XLSX.BookType {
+  return format === 'xls' ? 'biff8' : 'xlsx';
+}
+
+/** Writes base64 data to the app cache and opens the native share sheet. */
+async function shareBase64Native(data: string, filename: string, recordCount: number): Promise<boolean> {
+  const { Filesystem, Directory } = await import('@capacitor/filesystem');
+  const { Share } = await import('@capacitor/share');
+
+  const written = await Filesystem.writeFile({
+    path: filename,
+    data,
+    directory: Directory.Cache,
+  });
+
+  try {
+    await Share.share({
+      title: 'Swiss-Manager NAT File',
+      text: `Swiss-Manager NAT file containing ${recordCount} cleaned players.`,
+      files: [written.uri],
+      dialogTitle: 'Share or save NAT file',
+    });
+    return true;
+  } catch (err: any) {
+    // User closed the share sheet
+    if (/cancel/i.test(String(err?.message ?? err))) return false;
+    throw err;
+  }
+}
+
+/**
+ * Saves the workbook into the phone's Documents/SwissNat SL folder.
+ * Falls back to the share sheet (Save to Drive / Files) if direct saving is not allowed.
+ */
+async function saveWorkbookNative(
+  wb: XLSX.WorkBook,
+  filename: string,
+  format: NatFileFormat,
+  recordCount: number
+): Promise<'saved' | 'shared' | 'cancelled'> {
+  const data = XLSX.write(wb, { bookType: toBookType(format), type: 'base64' }) as string;
+  const { Filesystem, Directory } = await import('@capacitor/filesystem');
+
+  try {
+    try {
+      const perm = await Filesystem.checkPermissions();
+      if (perm.publicStorage !== 'granted') {
+        await Filesystem.requestPermissions();
+      }
+    } catch {
+      // Not required on newer Android versions
+    }
+
+    await Filesystem.writeFile({
+      path: `SwissNat SL/${filename}`,
+      data,
+      directory: Directory.Documents,
+      recursive: true,
+    });
+    return 'saved';
+  } catch (err) {
+    console.warn('Saving to Documents failed, opening share sheet instead:', err);
+    const shared = await shareBase64Native(data, filename, recordCount);
+    return shared ? 'shared' : 'cancelled';
+  }
+}
+
+/**
+ * Exports the NAT file and returns a user-facing status message.
+ * Browser: normal file download. Installed app: saves to Documents/SwissNat SL.
+ */
+export async function exportNatFile(
+  records: NatRecord[],
+  filename: string,
+  format: NatFileFormat = 'xls'
+): Promise<string> {
+  if (isNativeApp()) {
+    const wb = buildNatWorkbook(records);
+    const result = await saveWorkbookNative(wb, filename, format, records.length);
+    if (result === 'saved') return `Saved "${filename}" to Documents/SwissNat SL (${records.length} players)`;
+    if (result === 'shared') return `"${filename}" ready (${records.length} players)`;
+    return 'Export cancelled';
+  }
+
+  if (format === 'xls') {
+    downloadNatXls(records, filename);
+  } else {
+    downloadNatXlsx(records, filename);
+  }
+  return `Downloaded "${filename}" (${records.length} players)`;
+}
+
 /**
  * Downloads Swiss-Manager compatible Excel 97-2003 BIFF8 (.xls) file
  * Tries SheetJS XLSX.writeFile first, then falls back to Blob download
@@ -224,6 +329,14 @@ export function downloadNatXls(
   filename = 'Nat_File_Master.xls'
 ): void {
   const wb = buildNatWorkbook(records);
+
+  // Installed app (APK): blob downloads don't work in the WebView
+  if (isNativeApp()) {
+    void saveWorkbookNative(wb, filename, 'xls', records.length).catch(err =>
+      console.error('Native .xls save failed:', err)
+    );
+    return;
+  }
 
   // Attempt 1: SheetJS official writeFile
   try {
@@ -250,6 +363,14 @@ export function downloadNatXlsx(
 ): void {
   const wb = buildNatWorkbook(records);
 
+  // Installed app (APK): blob downloads don't work in the WebView
+  if (isNativeApp()) {
+    void saveWorkbookNative(wb, filename, 'xlsx', records.length).catch(err =>
+      console.error('Native .xlsx save failed:', err)
+    );
+    return;
+  }
+
   // Attempt 1: SheetJS official writeFile
   try {
     if (typeof XLSX.writeFile === 'function') {
@@ -275,6 +396,13 @@ export async function shareNatFile(
   records: NatRecord[],
   filename = 'Nat_File.xls'
 ): Promise<boolean> {
+  // Installed app (APK): use the native Android/iOS share sheet
+  if (isNativeApp()) {
+    const wb = buildNatWorkbook(records);
+    const data = XLSX.write(wb, { bookType: 'biff8', type: 'base64' }) as string;
+    return shareBase64Native(data, filename, records.length);
+  }
+
   const blob = generateNatXlsBlob(records);
   const file = new File([blob], filename, { type: 'application/vnd.ms-excel' });
 

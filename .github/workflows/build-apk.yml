@@ -1,0 +1,92 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x android/gradlew
+
+      - name: Assemble Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Prepare APK Asset
+        run: |
+          mkdir -p release-artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk release-artifacts/SwissNat-SL.apk
+          ls -la release-artifacts/
+
+      - name: Upload APK Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwissNat-SL-apk
+          path: release-artifacts/SwissNat-SL.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: latest
+          name: SwissNat SL Android APK (Latest)
+          body: |
+            ### 📱 SwissNat SL Official Android APK
+
+            Automated build from commit `${{ github.sha }}`.
+
+            - **File**: `SwissNat-SL.apk`
+            - **Application ID**: `com.swissnatsl.app`
+            - **Compatibility**: Android 7.0+ (API 24+)
+            - **Includes**: Client-side name cleaning, Sinhala/Tamil transliteration, Swiss-Manager BIFF8 .xls generator, and native WhatsApp/Telegram share.
+
+            #### 📲 Installation on Android:
+            1. Download `SwissNat-SL.apk` directly to your phone.
+            2. Tap the file in your downloads. If prompted with *"File might be harmful"*, select **Download anyway**.
+            3. Tap **Install**. (Enable *"Allow from this source"* if prompted by Android).
+          draft: false
+          prerelease: false
+          files: release-artifacts/SwissNat-SL.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { UploadCloud, Link as LinkIcon, CheckCircle, CheckCircle2, AlertCircle, Sparkles, RefreshCw, Clipboard, ExternalLink, HelpCircle, Download, FileSpreadsheet, Table } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import { autoDetectColumns, sanitizePlayerRow } from '../../core/sanitizer';
 import type { RawPlayerRow, NatRecord, ColumnMapping, SplitMode } from '../../core/types';
 import { downloadNatXls, downloadNatXlsx } from '../../core/natBuilder';
+import {
+  buildRecordsFromRows,
+  fetchGoogleSheetRows,
+  getGoogleSheetCsvDownloadLink as buildCsvDownloadLink,
+  parseSheetText,
+  parseWorkbookBuffer,
+} from '../../core/sheetImport';
 
 export interface WebImportTabProps {
   onRecordsImported: (records: NatRecord[], rawData: RawPlayerRow[], mapping: ColumnMapping) => void;
@@ -29,59 +34,16 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeImportMethod, setActiveImportMethod] = useState<'upload' | 'paste' | 'url'>('upload');
 
-  // Filter out completely blank rows
-  const filterEmptyRows = (rows: any[]): any[] => {
-    return rows.filter(row => {
-      const values = Object.values(row).map(v => String(v || '').trim()).filter(Boolean);
-      return values.length > 0;
-    });
-  };
-
-  // Parse raw sheet rows into NatRecords
+  // Parse raw sheet rows into NatRecords (shared with the mobile view)
   const processRawRows = (rawRows: any[], mappingOverride?: ColumnMapping) => {
-    let rows = filterEmptyRows(rawRows);
-    if (!rows || rows.length === 0) {
-      setErrorMessage('No valid data rows found in the uploaded file or link.');
-      return;
+    try {
+      const { records, rows, mapping } = buildRecordsFromRows(rawRows, splitMode, mappingOverride);
+      onRecordsImported(records, rows, mapping);
+      setSuccessMessage(`Successfully processed and sanitized ${records.length} player registrations!`);
+      setErrorMessage(null);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'No valid data rows found in the uploaded file or link.');
     }
-
-    // Check if row 0 was actually a title/banner row and row 1 contains the headers
-    if (rows.length > 1) {
-      const row0Keys = Object.keys(rows[0]);
-      const emptyKeysCount = row0Keys.filter(k => k.startsWith('__EMPTY')).length;
-      const row0Values = Object.values(rows[0]).map(v => String(v || '').toLowerCase());
-      const hasHeaderWords = row0Values.some(v =>
-        v.includes('name') || v.includes('school') || v.includes('birth') || v.includes('fide') || v.includes('last') || v.includes('first')
-      );
-      if (emptyKeysCount >= row0Keys.length - 2 && hasHeaderWords) {
-        const customHeaders = Object.values(rows[0]).map(v => String(v || '').trim());
-        const shiftedRows = rows.slice(1).map(r => {
-          const newObj: Record<string, any> = {};
-          const vals = Object.values(r);
-          customHeaders.forEach((h, i) => {
-            if (h) newObj[h] = vals[i] ?? '';
-          });
-          return newObj;
-        });
-        rows = filterEmptyRows(shiftedRows);
-      }
-    }
-
-    // Extract headers across first few rows to ensure all column names are captured
-    const allHeadersSet = new Set<string>();
-    for (const r of rows.slice(0, 5)) {
-      Object.keys(r).forEach(k => allHeadersSet.add(k));
-    }
-    const headers = Array.from(allHeadersSet);
-    const mapping = mappingOverride || autoDetectColumns(headers);
-
-    const records: NatRecord[] = rows.map((row, idx) =>
-      sanitizePlayerRow(row, idx, mapping, splitMode)
-    );
-
-    onRecordsImported(records, rows, mapping);
-    setSuccessMessage(`Successfully processed and sanitized ${records.length} player registrations!`);
-    setErrorMessage(null);
   };
 
   // Handle file drop / upload (.xlsx, .xls, .csv)
@@ -96,13 +58,7 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-        processRawRows(json);
+        processRawRows(parseWorkbookBuffer(evt.target?.result as ArrayBuffer));
       } catch (err: any) {
         setErrorMessage(`Failed to read file: ${err.message || 'Unknown error'}`);
       } finally {
@@ -125,13 +81,7 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
     setSuccessMessage(null);
 
     try {
-      // Use XLSX to read TSV / CSV text directly
-      const workbook = XLSX.read(clipboardText, { type: 'string' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-      processRawRows(json);
+      processRawRows(parseSheetText(clipboardText));
     } catch (err: any) {
       setErrorMessage(`Failed to parse pasted text: ${err.message}`);
     } finally {
@@ -141,7 +91,7 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
 
   // Handle Google Sheet URL Fetch
   const handleFetchGoogleSheet = async () => {
-    if (!googleSheetUrl) {
+    if (!googleSheetUrl.trim()) {
       setErrorMessage('Please paste a valid Google Sheet or Google Apps Script URL.');
       return;
     }
@@ -151,53 +101,8 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
     setSuccessMessage(null);
 
     try {
-      // Check if it is a Google Apps Script Web App JSON link
-      if (googleSheetUrl.includes('script.google.com')) {
-        const response = await fetch(googleSheetUrl);
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 1) {
-          const headers: string[] = data[0];
-          const rows = data.slice(1).map(row => {
-            const obj: Record<string, any> = {};
-            headers.forEach((h, i) => {
-              obj[h] = row[i];
-            });
-            return obj;
-          });
-          processRawRows(rows);
-          return;
-        }
-      }
-
-      // Extract Sheet ID from standard Google Sheet URL
-      const match = googleSheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      if (!match) {
-        throw new Error('Could not find Google Spreadsheet ID in the link. Ensure it is a valid Google Sheet link.');
-      }
-
-      const sheetId = match[1];
-      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-
-      // Try fetching public CSV directly
-      try {
-        const response = await fetch(exportUrl);
-        if (response.ok) {
-          const csvText = await response.text();
-          const workbook = XLSX.read(csvText, { type: 'string' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-          processRawRows(json);
-          return;
-        }
-      } catch (corsErr) {
-        // Direct browser fetch blocked by Google's CORS header
-        throw new Error(
-          'Google blocked direct browser fetching due to CORS security. Tip: Simply press Ctrl+A & Ctrl+C on your Google Sheet, switch to the "Paste from Clipboard" tab below, and paste directly!'
-        );
-      }
-
-      throw new Error('Unable to fetch CSV. Ensure the sheet is shared with "Anyone with the link can view".');
+      const rows = await fetchGoogleSheetRows(googleSheetUrl);
+      processRawRows(rows);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to fetch Google Sheet.');
     } finally {
@@ -206,11 +111,7 @@ export const WebImportTab: React.FC<WebImportTabProps> = ({
   };
 
   // Helper to get Google Sheet CSV download link
-  const getGoogleSheetCsvDownloadLink = () => {
-    const match = googleSheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return null;
-    return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
-  };
+  const getGoogleSheetCsvDownloadLink = () => buildCsvDownloadLink(googleSheetUrl);
 
   return (
     <div style={{ maxWidth: 1040, margin: '0 auto', padding: '24px 24px', width: '100%' }}>

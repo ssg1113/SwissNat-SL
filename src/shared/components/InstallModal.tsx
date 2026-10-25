@@ -492,25 +492,144 @@ export const InstallModal: React.FC<InstallModalProps> = ({
               {/* Android Section */}
               {mobileSubTab === 'android' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {/* Android Quick Install Card */}
+                  {/* Hero Action: Direct Android APK Download */}
                   <div
                     style={{
-                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.03) 100%)',
-                      border: '1px solid var(--accent-emerald-border)',
+                      background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(245, 158, 11, 0.05) 100%)',
+                      border: '1.5px solid var(--accent-gold)',
                       borderRadius: 'var(--radius-lg)',
-                      padding: '16px 18px',
+                      padding: '18px',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: 10,
+                      gap: 14,
+                      boxShadow: '0 4px 20px rgba(217, 119, 6, 0.15)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <h4 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                            Android APK Package (.apk)
+                          </h4>
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 800,
+                              padding: '2px 7px',
+                              borderRadius: 10,
+                              background: 'var(--accent-gold)',
+                              color: '#ffffff',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            Recommended
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+                          Full standalone Android application. Includes native WhatsApp &amp; Telegram file sharing and saves directly to your phone's Documents folder.
+                        </p>
+                      </div>
+
+                      <a
+                        href="https://github.com/ssg1113/SwissNat-SL/releases/latest/download/SwissNat-SL.apk"
+                        download="SwissNat-SL.apk"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '12px 20px',
+                          fontSize: 13.5,
+                          fontWeight: 800,
+                          borderRadius: 'var(--radius-md)',
+                          background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          textDecoration: 'none',
+                          boxShadow: '0 4px 14px rgba(217, 119, 6, 0.4)',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Download size={18} strokeWidth={2.4} />
+                        <span>Download APK</span>
+                      </a>
+                    </div>
+
+                    {/* Quick Step-by-Step Instructions */}
+                    <div
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '12px 14px',
+                        border: '1px solid var(--border-color)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                        fontSize: 12,
+                        color: 'var(--text-main)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: 'var(--accent-gold-dark)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <CheckCircle2 size={15} />
+                        <span>How to Install the APK on Your Phone:</span>
+                      </div>
+                      <ol style={{ paddingLeft: 18, margin: 0, display: 'flex', flexDirection: 'column', gap: 6, lineHeight: 1.45 }}>
+                        <li>
+                          Tap the <strong>Download APK</strong> button above to download <code>SwissNat-SL.apk</code>.
+                        </li>
+                        <li>
+                          Open the downloaded file. If your browser says <em>"File might be harmful"</em>, tap <strong>Download anyway</strong> (standard Android notice for apps outside Play Store).
+                        </li>
+                        <li>
+                          Tap <strong>Install</strong>. If prompted, toggle on <em>"Allow from this source"</em> in Settings.
+                        </li>
+                      </ol>
+                    </div>
+
+                    {/* Release Links */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontSize: 11.5 }}>
+                      <span style={{ color: 'var(--text-dim)' }}>
+                        Package: <code>com.swissnatsl.app</code> &bull; Android 7.0+
+                      </span>
+                      <a
+                        href="https://github.com/ssg1113/SwissNat-SL/releases"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          color: 'var(--accent-cyan-dark)',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <ExternalLink size={13} />
+                        Browse all releases on GitHub
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Alternative Action: Web App (PWA) */}
+                  <div
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-lg)',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                       <div>
-                        <h4 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                          Android Web App (PWA)
-                        </h4>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, marginTop: 2 }}>
-                          Instant installation without downloading large files. Runs full screen.
+                        <h5 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                          Option 2: Instant Web App (No APK download needed)
+                        </h5>
+                        <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: 0, marginTop: 2 }}>
+                          Add to home screen directly from Chrome. Saves storage space.
                         </p>
                       </div>
 
@@ -522,95 +641,24 @@ export const InstallModal: React.FC<InstallModalProps> = ({
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 6,
-                            padding: '8px 14px',
-                            fontSize: 12.5,
+                            padding: '6px 12px',
+                            fontSize: 12,
                             fontWeight: 700,
-                            borderRadius: 'var(--radius-md)',
-                            background: 'var(--accent-emerald)',
-                            color: '#ffffff',
-                            border: 'none',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--bg-card)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--border-color)',
                             cursor: 'pointer',
                           }}
                         >
-                          <Download size={15} />
-                          Install on Android
+                          <Download size={14} />
+                          Add to Home Screen
                         </button>
                       )}
                     </div>
 
-                    <div style={{ fontSize: 12, color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div>
-                        <strong>Chrome for Android manual steps:</strong>
-                      </div>
-                      <ol style={{ paddingLeft: 18, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <li>Tap the <strong>three dots (⋮)</strong> in Chrome.</li>
-                        <li>Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.</li>
-                        <li>Confirm <strong>"Install"</strong>. SwissNat SL will appear in your app drawer.</li>
-                      </ol>
-                    </div>
-                  </div>
-
-                  {/* Android Native APK Package */}
-                  <div
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-color)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 8,
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                      <div>
-                        <h5 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-                          Android APK / Native Build
-                        </h5>
-                        <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: 0, marginTop: 2 }}>
-                          Capacitor Android package for pairing arbiters with native WhatsApp &amp; Telegram file share.
-                        </p>
-                      </div>
-
-                      <a
-                        href="https://github.com/ssg1113/SwissNat-SL/releases"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '6px 12px',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          borderRadius: 'var(--radius-sm)',
-                          background: 'var(--bg-card)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--border-color)',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        <ExternalLink size={13} />
-                        GitHub Releases
-                      </a>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: '8px 10px',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--bg-card)',
-                        border: '1px dashed var(--border-color)',
-                        fontSize: 11,
-                        color: 'var(--text-dim)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: 6,
-                      }}
-                    >
-                      <span>Build APK locally: <code>npm run build:apk</code> or run <code>build-apk.bat</code></span>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      In Chrome, tap <strong>Menu (⋮)</strong> &rarr; <strong>Add to Home screen</strong> / <strong>Install app</strong>.
                     </div>
                   </div>
                 </div>
