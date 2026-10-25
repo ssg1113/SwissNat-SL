@@ -228,20 +228,6 @@ The project specifications call for testing that covers:
 
 The SRS targets processing **200+ rows in under 500 ms** on the client side. This is a performance target, **not a benchmark result**.
 
-## 📌 Development Roadmap
-
-The master technical plan outlines a two-week development sequence:
-
-| Period | Planned work |
-| --- | --- |
-| Days 1–2 | Name cleaning, splitting, transliteration, unit tests |
-| Days 3–4 | Spreadsheet import, Google Sheets integration, NAT generation |
-| Days 5–7 | Responsive web UI, inline review, filtering, downloads |
-| Days 8–10 | Mobile integration and sharing |
-| Days 11–14 | Optional AI, end-to-end QA, final compatibility testing |
-
-Progress should be tracked through repository commits, issues, and test results; this roadmap is **not** a statement that all milestones are complete.
-
 ## 🎯 Who This Project Is For
 
 - Chess pairing arbiters and tournament arbiters.
@@ -257,7 +243,7 @@ Please **do not post real players' private registration details, dates of birth,
 
 ## 👨‍💻 Project Background
 
-Created by **S S Gayashan**, IT Undergraduate, Chess pairing arbiter, to address repetitive data-cleaning problems encountered while preparing Sri Lankan chess tournaments.
+Created by **S S Gayashan De Silva**, IT Undergraduate, Chess arbiter to address repetitive data-cleaning problems encountered while preparing Sri Lankan chess tournaments.
 
 ---
 
