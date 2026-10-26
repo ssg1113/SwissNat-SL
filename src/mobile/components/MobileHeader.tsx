@@ -1,5 +1,6 @@
 import React from 'react';
 import { Share2, Download, CheckCircle2, Smartphone } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import type { NatRecord } from '../../core/types';
 import { exportNatFile, shareNatFile } from '../../core/natBuilder';
 
@@ -18,6 +19,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 }) => {
   const [sharing, setSharing] = React.useState(false);
   const [shareSuccess, setShareSuccess] = React.useState<boolean | null>(null);
+  const isNative = Capacitor.isNativePlatform();
 
   const filtered = selectedCategory === 'all'
     ? records
@@ -58,7 +60,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     <header style={{
       background: 'var(--header-bg)',
       borderBottom: '1px solid var(--border-color)',
-      padding: '10px 14px',
+      paddingTop: isNative
+        ? 'max(calc(10px + env(safe-area-inset-top, 0px)), 34px)'
+        : 'max(calc(10px + env(safe-area-inset-top, 0px)), 12px)',
+      paddingBottom: 10,
+      paddingLeft: 'max(calc(14px + env(safe-area-inset-left, 0px)), 14px)',
+      paddingRight: 'max(calc(14px + env(safe-area-inset-right, 0px)), 14px)',
       position: 'sticky',
       top: 0,
       zIndex: 80,
@@ -67,10 +74,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 10,
+      gap: 8,
+      boxSizing: 'border-box',
+      width: '100%',
     }}>
       {/* Brand & Mobile Badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
         <img
           src="/SwissNat SL Icon.png"
           alt="SwissNat SL"
@@ -80,16 +89,18 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             borderRadius: 'var(--radius-sm)',
             objectFit: 'cover',
             display: 'block',
+            flexShrink: 0,
           }}
         />
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
             <h1 style={{
               fontSize: 16,
               fontWeight: 800,
               letterSpacing: '-0.02em',
               color: 'var(--text-main)',
               margin: 0,
+              whiteSpace: 'nowrap',
             }}>
               SwissNat <span style={{ color: 'var(--accent-gold)' }}>SL</span>
             </h1>
@@ -101,19 +112,20 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               background: 'var(--accent-emerald-light)',
               color: 'var(--accent-emerald-dark)',
               textTransform: 'uppercase',
+              flexShrink: 0,
             }}>
               App
             </span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {records.length > 0 ? `${records.length} Players` : 'Pairing Arbiter'}
           </span>
         </div>
       </div>
 
-      {/* Right Controls: View Switcher & Action buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {onOpenInstall && (
+      {/* Right Controls: Action buttons (APK download button hidden inside native APK) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        {onOpenInstall && !isNative && (
           <button
             type="button"
             onClick={onOpenInstall}
@@ -129,6 +141,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               fontSize: 11,
               fontWeight: 700,
               cursor: 'pointer',
+              flexShrink: 0,
             }}
             title="Install SwissNat SL App (Mobile / Tablet / PC)"
           >

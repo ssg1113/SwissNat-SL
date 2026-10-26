@@ -1,5 +1,6 @@
 import React from 'react';
 import { Upload, Users, Share2, HelpCircle } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export type MobileTab = 'import' | 'players' | 'export' | 'help';
 
@@ -14,22 +15,32 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onTabChange,
   playerCount,
 }) => {
+  const isNative = Capacitor.isNativePlatform();
+  const bottomInset = isNative
+    ? 'max(env(safe-area-inset-bottom, 0px), 18px)'
+    : 'max(env(safe-area-inset-bottom, 0px), 8px)';
+
   return (
     <nav style={{
       position: 'fixed',
       bottom: 0,
       left: 0,
       right: 0,
-      height: 64,
+      minHeight: 58,
+      height: `calc(58px + ${bottomInset})`,
       background: 'var(--header-bg)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       borderTop: '1px solid var(--border-color)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-around',
       zIndex: 90,
-      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      paddingTop: 6,
+      paddingBottom: bottomInset,
+      paddingLeft: 'max(env(safe-area-inset-left, 0px), 8px)',
+      paddingRight: 'max(env(safe-area-inset-right, 0px), 8px)',
+      boxSizing: 'border-box',
       boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
     }}>
       {/* 1. Import Tab */}

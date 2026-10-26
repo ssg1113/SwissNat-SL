@@ -43,9 +43,12 @@ export const MobileApp: React.FC<MobileAppProps> = ({
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: 'var(--bg-primary)',
-      paddingBottom: 64, // Space for bottom nav
+      paddingBottom: 'calc(76px + env(safe-area-inset-bottom, 18px))', // Space for bottom nav
+      overflowX: 'hidden',
+      position: 'relative',
+      width: '100%',
     }}>
       {/* Mobile Top Header */}
       <MobileHeader
@@ -59,9 +62,9 @@ export const MobileApp: React.FC<MobileAppProps> = ({
       {statusNotification && (
         <div style={{
           position: 'fixed',
-          top: 70,
-          left: 16,
-          right: 16,
+          top: 'calc(68px + env(safe-area-inset-top, 0px))',
+          left: 'max(16px, env(safe-area-inset-left, 16px))',
+          right: 'max(16px, env(safe-area-inset-right, 16px))',
           zIndex: 100,
           background: 'var(--bg-card)',
           border: '1px solid var(--accent-gold-border)',

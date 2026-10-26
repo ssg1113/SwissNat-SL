@@ -299,7 +299,7 @@ export const MobilePlayerModal: React.FC<MobilePlayerModalProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          padding: '14px 20px',
+          padding: '14px 20px calc(14px + env(safe-area-inset-bottom, 16px))',
           borderTop: '1px solid var(--border-color)',
           background: 'var(--bg-secondary)',
         }}>
