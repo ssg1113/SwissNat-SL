@@ -2,7 +2,7 @@ name: Build & Release Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags:
       - 'v*'
   workflow_dispatch:
@@ -16,47 +16,67 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Install Java JDK 17
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Node.js 20
+      # 3. Install Node.js 22
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22'
           cache: 'npm'
 
+      # 4. Verify installed versions
+      - name: Verify Node.js and npm
+        run: |
+          node --version
+          npm --version
+
+      # 5. Install dependencies
       - name: Install Node Dependencies
         run: npm ci
 
+      # 6. Run tests
       - name: Run Test Suite
         run: npm test
 
+      # 7. Build web application
       - name: Build Web Application
         run: npm run build
 
+      # 8. Synchronize Capacitor Android
       - name: Sync Capacitor Android
         run: npx cap sync android
 
+      # 9. Make Gradle executable
       - name: Make Gradle Wrapper Executable
         run: chmod +x android/gradlew
 
+      # 10. Build Android debug APK
       - name: Assemble Debug APK
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon --stacktrace
 
+      # 11. Prepare APK
       - name: Prepare APK Asset
         run: |
           mkdir -p release-artifacts
-          cp android/app/build/outputs/apk/debug/app-debug.apk release-artifacts/SwissNat-SL.apk
+
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+            release-artifacts/SwissNat-SL.apk
+
           ls -la release-artifacts/
 
+      # 12. Upload APK as workflow artifact
       - name: Upload APK Build Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -65,28 +85,42 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # 13. Publish GitHub release
       - name: Publish or Update GitHub Release
         uses: softprops/action-gh-release@v2
+
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+
         with:
-          tag_name: latest
-          name: SwissNat SL Android APK (Latest)
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+
+          name: SwissNat SL Android APK
+
           body: |
             ### 📱 SwissNat SL Official Android APK
 
             Automated build from commit `${{ github.sha }}`.
 
-            - **File**: `SwissNat-SL.apk`
-            - **Application ID**: `com.swissnatsl.app`
-            - **Compatibility**: Android 7.0+ (API 24+)
-            - **Includes**: Client-side name cleaning, Sinhala/Tamil transliteration, Swiss-Manager BIFF8 .xls generator, and native WhatsApp/Telegram share.
+            **Application Information**
 
-            #### 📲 Installation on Android:
-            1. Download `SwissNat-SL.apk` directly to your phone.
-            2. Tap the file in your downloads. If prompted with *"File might be harmful"*, select **Download anyway**.
-            3. Tap **Install**. (Enable *"Allow from this source"* if prompted by Android).
+            - File: `SwissNat-SL.apk`
+            - Application ID: `com.swissnatsl.app`
+            - Includes Swiss tournament management features.
+
+            ### 📲 Installation Instructions
+
+            1. Download `SwissNat-SL.apk`.
+            2. Open the downloaded APK on your Android device.
+            3. Allow installation from this source if prompted.
+            4. Tap Install.
+            5. Launch SwissNat SL.
+
+            **Note:** This is a debug APK intended for testing.
+
           draft: false
           prerelease: false
+
           files: release-artifacts/SwissNat-SL.apk
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
